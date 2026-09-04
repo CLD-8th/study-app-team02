@@ -195,7 +195,21 @@ public class StudyService {
      * 반환형태    List<StudyListResponse>
      * 동작결과    EP-16 · 내가 등록한 것만 최신순으로 나옴
      */
-        throw new UnsupportedOperationException("TODO 63");
+        List<StudyPost> posts =
+                studyPostRepository.findByWriterIdOrderByCreatedAtDesc(memberId);
+
+        List<Long> ids = posts.stream()
+                .map(StudyPost::getId)
+                .toList();
+
+        Map<Long, Long> counts = acceptedCounts(ids);
+
+        return posts.stream()
+                .map(post -> StudyListResponse.of(
+                        post,
+                        counts.getOrDefault(post.getId(), 0L)
+                ))
+                .toList();
     }
 
     public StudyPost getWithWriter(Long id) {
