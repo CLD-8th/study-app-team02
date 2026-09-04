@@ -117,63 +117,74 @@ public class ApplicationService {
     }
 
     /**
-     * 수락.
+     * 신청을 수락함.
      *
-     * 마지막 자리를 채우면 모집글도 함께 마감함.
-     * 별도 처리를 두지 않고 수락 시점에 판단함.
+     * 마지막 자리를 채우면 모집글도 함께 마감함. 별도 처리를 두지 않고 수락 시점에 판단함.
+     *
+     * @param applicationId 신청 식별자
+     * @param memberId 토큰에서 확인한 회원 식별자
+     * @return 수락된 신청
+     * @throws BusinessException 대상이 없으면 404, 모집자가 아니면 403,
+     *         이미 처리됐으면 400, 정원이 차 있으면 400
      */
     @Transactional
     public ApplicationResponse accept(Long applicationId, Long memberId) {
-    /*
-     * TODO 43 · 신청 수락
-     *
-     * 기능        처리 가능한지 확인 → 정원 여유 확인 → 수락으로 바꿈
-     *             마지막 자리를 채우면 모집글도 함께 마감함
-     *             별도 처리를 두지 않고 수락 시점에 판단함
-     * 활용메소드  ApplicationService.processable()        같은 클래스 · TODO 45
-     *             ApplicationRepository.count...Status()  제공됨
-     *             Application.accept()                   엔티티 · 제공됨
-     *             StudyPost.close()                      엔티티 · 제공됨
-     * 반환형태    ApplicationResponse
-     * 동작결과    EP-10 · 상태가 ACCEPTED · 정원이 차면 400 CAPACITY_EXCEEDED
-     *             마지막 자리를 채우면 모집글 상태가 CLOSED
-     */
-        throw new UnsupportedOperationException("TODO 43");
+        Application application = processable(applicationId, memberId);
+        StudyPost studyPost = application.getStudyPost();
+
+        long accepted = applicationRepository.countByStudyPostIdAndStatus(
+                studyPost.getId(), ApplicationStatus.ACCEPTED);
+        if (accepted >= studyPost.getCapacity()) {
+            throw new BusinessException(ErrorCode.CAPACITY_EXCEEDED, "정원 초과");
+        }
+
+        application.accept();
+        if (accepted + 1 == studyPost.getCapacity()) {
+            studyPost.close();
+        }
+
+        log.info("신청 수락: id={}", applicationId);
+        return ApplicationResponse.from(application);
     }
 
     /**
-     * 거절.
+     * 신청을 거절함.
      *
      * 정원을 확인하지 않음. 거절은 인원에 영향을 주지 않음.
+     *
+     * @param applicationId 신청 식별자
+     * @param memberId 토큰에서 확인한 회원 식별자
+     * @return 거절된 신청
+     * @throws BusinessException 대상이 없으면 404, 모집자가 아니면 403, 이미 처리됐으면 400
      */
     @Transactional
     public ApplicationResponse reject(Long applicationId, Long memberId) {
-    /*
-     * TODO 44 · 신청 거절
-     *
-     * 기능        처리 가능한지 확인한 뒤 거절로 바꿈
-     *             정원을 확인하지 않음 · 거절은 인원에 영향을 주지 않음
-     * 활용메소드  ApplicationService.processable()   같은 클래스 · TODO 45
-     *             Application.reject()              엔티티 · 제공됨
-     * 반환형태    ApplicationResponse
-     * 동작결과    EP-11 · 상태가 REJECTED · 처리된 건은 400 ALREADY_PROCESSED
-     */
-        throw new UnsupportedOperationException("TODO 44");
+        Application application = processable(applicationId, memberId);
+        application.reject();
+
+        log.info("신청 거절: id={}", applicationId);
+        return ApplicationResponse.from(application);
     }
 
-    private Application processable(Long applicationId, Long memberId) {
-    /*
-     * TODO 45 · 처리 가능 확인 공통
+    /**
+     * 수락·거절 처리가 가능한지 확인함.
      *
-     * 기능        모집자 본인인지 → 대기 상태인지 확인하고 대상을 돌려줌
-     *             수락과 거절이 같은 확인을 하므로 하나로 묶음
-     * 활용메소드  ApplicationService.getWithStudyPost()   같은 클래스 · 제공됨
-     *             StudyPost.isWrittenBy()                엔티티 · 제공됨
-     *             Application.isPending()                엔티티 · 제공됨
-     * 반환형태    Application
-     * 동작결과    남의 글 403 · 처리된 건 400 ALREADY_PROCESSED
+     * 모집자 본인만, 대기 상태의 신청만 처리 가능함.
+     *
+     * @param applicationId 신청 식별자
+     * @param memberId 토큰에서 확인한 회원 식별자
+     * @return 처리 대상 신청
+     * @throws BusinessException 대상이 없으면 404, 모집자가 아니면 403, 이미 처리됐으면 400
      */
-        throw new UnsupportedOperationException("TODO 45");
+    private Application processable(Long applicationId, Long memberId) {
+        Application application = getWithStudyPost(applicationId);
+        if (!application.getStudyPost().isWrittenBy(memberId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN, "모집자만 처리 가능");
+        }
+        if (!application.isPending()) {
+            throw new BusinessException(ErrorCode.ALREADY_PROCESSED, "이미 처리된 신청");
+        }
+        return application;
     }
 
     private Application getWithStudyPost(Long id) {
