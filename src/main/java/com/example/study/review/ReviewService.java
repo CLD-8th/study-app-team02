@@ -35,15 +35,15 @@ public class ReviewService {
     private final MemberService memberService;
 
     public List<ReviewResponse> findByStudy(Long studyPostId) {
-    /*
-     * TODO 52 · 후기 목록 조회
-     *
-     * 기능        모집글 식별자로 오래된 순으로 조회함 · 손님도 볼 수 있음
-     * 활용메소드  ReviewRepository 의 후기 규약   TODO 51 · 같은 담당
-     *             ReviewResponse.from()         제공됨
-     * 반환형태    List<ReviewResponse>
-     * 동작결과    EP-12 · 토큰 없이도 200
-     */
+        /*
+         * TODO 52 · 후기 목록 조회
+         *
+         * 기능        모집글 식별자로 오래된 순으로 조회함 · 손님도 볼 수 있음
+         * 활용메소드  ReviewRepository 의 후기 규약   TODO 51 · 같은 담당
+         *             ReviewResponse.from()         제공됨
+         * 반환형태    List<ReviewResponse>
+         * 동작결과    EP-12 · 토큰 없이도 200
+         */
         List<Review> reviews = reviewRepository.findByStudyPostIdOrderByIdAsc(studyPostId);
 
         return reviews.stream()
@@ -53,7 +53,7 @@ public class ReviewService {
 
     /**
      * 후기 등록.
-     *
+     * <p>
      * 순서는 대상 확인 · 마감 여부 · 참여 여부 · 중복임.
      */
     @Transactional
@@ -93,25 +93,33 @@ public class ReviewService {
 
     /**
      * 후기 삭제.
-     *
+     * <p>
      * 모집자에게 삭제 권한을 주지 않음.
      * 낮은 평점을 지울 수 있게 되어 후기의 의미가 사라짐.
      */
-    @Transactional
-    public void delete(Long reviewId, Long memberId) {
-    /*
-     * TODO 54 · 후기 삭제
-     *
-     * 기능        작성자 본인인지 확인한 뒤 지움
-     *             모집자에게 삭제 권한을 주지 않음 · 낮은 평점을 지울 수 있게 됨
-     * 활용메소드  ReviewRepository.findById()   제공됨
-     *             Review.isWrittenBy()          엔티티 · 제공됨
-     *             ReviewRepository.delete()     제공됨
-     * 반환형태    없음
-     * 동작결과    EP-14 · 204 · 남의 후기는 403 FORBIDDEN
-     */
-        throw new UnsupportedOperationException("TODO 54");
-    }
+        /*
+         * TODO 54 · 후기 삭제
+         *
+         * 기능        작성자 본인인지 확인한 뒤 지움
+         *             모집자에게 삭제 권한을 주지 않음 · 낮은 평점을 지울 수 있게 됨
+         * 활용메소드  ReviewRepository.findById()   제공됨
+         *             Review.isWrittenBy()          엔티티 · 제공됨
+         *             ReviewRepository.delete()     제공됨
+         * 반환형태    없음
+         * 동작결과    EP-14 · 204 · 남의 후기는 403 FORBIDDEN
+         */
+        @Transactional
+        public void delete (Long reviewId, Long memberId){
+            Review review = reviewRepository.findById(reviewId)
+                    .orElseThrow(() -> new IllegalArgumentException("해당 후기를 찾을 수 없습니다. id=" + reviewId));
+
+            if (!review.isWrittenBy(memberId)) {
+                throw new IllegalArgumentException("작성자 본인만 삭제할 수 있습니다.");
+            }
+
+            reviewRepository.delete(review);
+        }
+
 
     private boolean isParticipant(StudyPost post, Long memberId) {
     /*
