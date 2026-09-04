@@ -2,6 +2,10 @@
 
 스터디 모집 게시판 스켈레톤. TODO 45개를 채워 완성함.
 
+## 진행 상황
+
+담당별 완료 현황: [docs/status.md](docs/status.md)
+
 ## 구성
 
 | 항목 | 값 |
@@ -21,6 +25,8 @@
 | `TODO.md` | 담당별 표 · 주석 읽는 법 · 응답 형태 |
 | `docs/api.md` | 주소 · 요청 · 응답 · 실패 코드 |
 | `docs/functions.md` | 기능별 판단 순서 · 상태 전이 · 권한 |
+| `docs/testing.md` | curl 로 직접 확인하는 법 |
+| `docs/status.md` | 담당별 완료 현황 |
 
 **주석의 `동작결과` 줄은 `docs/api.md`, `기능` 줄은 `docs/functions.md` 에서 찾음.**
 
@@ -36,6 +42,23 @@
 
 **표는 기동할 때 만들어짐.** 직접 만들지 않아도 됨.
 
+## 실행 방법
+
+```bash
+# 1. 스키마·계정 생성 (최초 1회, MySQL root로)
+mysql -u root -p < db/schema.sql
+
+# 2. 서버 기동
+./gradlew bootRun        # mac · linux
+gradlew.bat bootRun      # windows
+```
+
+기동 후 `http://localhost:8090` 접속. `./gradlew` 실행 권한 오류가 나면 `chmod +x gradlew` 한 번만 해주면 됨.
+
+```bash
+# 3. 샘플 자료 넣기 (서버 한 번 기동한 뒤)
+mysql -u study -pStudy!1234 study_app < db/sample.sql
+```
 
 ## 샘플 자료
 
