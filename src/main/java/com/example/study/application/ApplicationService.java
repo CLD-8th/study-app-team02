@@ -38,26 +38,66 @@ public class ApplicationService {
      */
     @Transactional
     public ApplicationResponse apply(Long studyPostId, String message, Long memberId) {
-    /*
-     * TODO 31 · 신청
-     *
-     * 기능        대상 확인 → 자기 모집글 → 상태 → 마감일 → 중복 순서로 판단
-     *             순서가 바뀌면 없는 모집글에 다른 판단을 시도하게 됨
-     *             상태가 마감인 것과 마감일이 지난 것은 사유가 다름
-     *             거절된 신청도 중복으로 봄 · 재신청을 허용하지 않기로 정함
-     * 활용메소드  StudyService.getWithWriter()      제공됨
-     *             StudyPost.isWrittenBy()          엔티티 · 제공됨
-     *             StudyPost.isRecruiting()         엔티티 · 제공됨
-     *             StudyPost.isDeadlinePassed()     엔티티 · 제공됨
-     *             ApplicationRepository 의 조회 규약  제공됨
-     *             MemberService.getMember()        제공됨
-     *             ApplicationResponse.from()       제공됨
-     * 반환형태    ApplicationResponse · TODO.md 응답 형태 참고
-     * 동작결과    EP-07 · 201 · 자기 글 400 SELF_APPLICATION
-     *             마감 400 STUDY_CLOSED · 마감일 경과 400 DEADLINE_PASSED
-     *             중복 400 DUPLICATE_APPLICATION
-     */
-        throw new UnsupportedOperationException("TODO 31");
+        // 1. 신청할 모집글과 모집자 정보 조회
+        StudyPost post = studyService.getWithWriter(studyPostId);
+
+        // 2. 모집자 본인이 작성한 모집글엔 참여 신청 못함.
+        if(post.isWrittenBy(memberId)) {
+            throw new BusinessException(
+                    ErrorCode.SELF_APPLICATION,
+                    "자기 모집글에는 신청할 수 없음"
+            );
+        }
+
+        // 3. 모집상태 -> recruiting?
+        // 모집상태가 리크루팅이니?
+        if (!post.isRecruiting()) {
+            throw new BusinessException(
+                    ErrorCode.STUDY_CLOSED,
+                    "마감된 모집글에는 신청할 수 없음"
+            );
+        }
+
+        // 4. 모집 상태가 리크루팅 상태여도 마감일 지나면 신청 불가
+        if(post.isDeadlinePassed()) {
+            throw new BusinessException(
+                    ErrorCode.DEADLINE_PASSED,
+                    "마감일이 지난 모집글에는 신청할 수 없음"
+            );
+        }
+
+        // 5. 같은 회원이 중복으로 모집글에 신청했나?
+        if(applicationRepository
+                .findByStudyPostIdAndApplicantId(studyPostId, memberId)
+                .isPresent()) {
+            throw new BusinessException(
+                    ErrorCode.DUPLICATE_APPLICATION,
+                    "이미 신청한 모집글"
+            );
+        }
+
+        // 6. 로그인한 회원 번호로 실제 신청자 정보를 조회함.
+        Member applicant = memberService.getMember(memberId);
+
+        // 7. 신청 정보를 생성
+        Application application = new Application(post, applicant, message);
+
+        // 8. 만든 신청 정보를 DB에 저장
+        Application saved = applicationRepository.save(application);
+
+        // 9. 신청 처리 결과를 서버 실행 기록에 남기기
+        log.info (
+                "스터디 신청: id={}, studyPostId={}, applicantId={}",
+                saved.getId(),
+                studyPostId,
+                memberId
+
+        );
+
+        // 10. 엔티티를 API 응답 형태로 변환해 요청한 화면에 반환
+        return ApplicationResponse.from(saved);
+
+
     }
 
     /**
@@ -68,19 +108,36 @@ public class ApplicationService {
      */
     @Transactional
     public void cancel(Long applicationId, Long memberId) {
-    /*
-     * TODO 32 · 신청 취소
-     *
-     * 기능        신청자 본인인지 → 대기 상태인지 확인한 뒤 행을 지움
-     *             수락된 신청을 취소하면 마감된 글에 빈자리가 생기며 되돌릴 수 없음
-     * 활용메소드  ApplicationService.getWithStudyPost()   같은 클래스 · 제공됨
-     *             Application.isAppliedBy()              엔티티 · 제공됨
-     *             Application.isPending()                엔티티 · 제공됨
-     *             ApplicationRepository.delete()         제공됨
-     * 반환형태    없음
-     * 동작결과    EP-08 · 204 · 남의 신청 403 · 처리된 건 400 ALREADY_PROCESSED
-     */
-        throw new UnsupportedOperationException("TODO 32");
+        // 1. 취소 신청 part와 해당 모집글을 함께 조회
+        Application application = getWithStudyPost(applicationId);
+
+        // 2. 로그인한 회원이 해당 신청 작성자인지? 본인 확인
+        if (!application.isAppliedBy(memberId)) {
+            throw new BusinessException(
+                    ErrorCode.FORBIDDEN,
+                    "신청자 본인만 취소할 수 있음"
+            );
+        }
+
+        // 3. 아직 처리 X 펜딩 상태의 신청인지 확인
+        if (!application.isPending()) {
+            throw new BusinessException(
+                    ErrorCode.ALREADY_PROCESSED,
+                    "이미 처리된 신청은 취소할 수 없음"
+            );
+        }
+
+        // 4. 취소된 신청 기록은 신청 행을 삭제
+        applicationRepository.delete(application);
+
+        // 5. 취소된 신청/신청자 번호를 서버 실행 기록에 남김
+        log.info(
+                "스터디 신청 취소: applicationId={}, applicantId={}",
+                applicationId,
+                memberId
+        );
+
+
     }
 
     public List<ApplicationResponse> findByStudy(Long studyPostId, Long memberId) {
