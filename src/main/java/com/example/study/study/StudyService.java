@@ -37,6 +37,16 @@ public class StudyService {
     private final ApplicationRepository applicationRepository;
     private final MemberService memberService;
 
+    /**
+     * 모집글을 등록함.
+     *
+     * @param title 제목
+     * @param content 내용
+     * @param capacity 정원
+     * @param deadline 마감일
+     * @param memberId 토큰에서 확인한 회원 식별자, 모집자가 됨
+     * @return 등록된 모집글
+     */
     @Transactional
     public StudyDetailResponse create(String title, String content, int capacity,
                                       LocalDate deadline, Long memberId) {
@@ -71,19 +81,36 @@ public class StudyService {
         throw new UnsupportedOperationException("TODO 11");
     }
 
+    /**
+     * 모집글 상세를 조회함. 손님도 볼 수 있음.
+     *
+     * @param id 모집글 식별자
+     * @return 모집글 상세
+     * @throws BusinessException 대상이 없으면 404
+     */
     public StudyDetailResponse findById(Long id) {
         StudyPost post = getWithWriter(id);
         return StudyDetailResponse.of(post, countAccepted(id));
     }
 
     /**
-     * 수정.
+     * 모집글을 수정함.
      *
      * 마감된 모집글은 수정하지 않음. 정원을 늘리면 자리가 있는데 신청이 막히고
      * 마감일을 바꿔도 상태가 그대로라 의미가 없음.
      *
      * 정원은 현재 수락 인원보다 작게 바꿀 수 없음.
      * 인원이 정원을 넘는 상태가 되며 되돌릴 방법이 없음.
+     *
+     * @param id 모집글 식별자
+     * @param title 제목
+     * @param content 내용
+     * @param capacity 정원
+     * @param deadline 마감일
+     * @param memberId 토큰에서 확인한 회원 식별자
+     * @return 수정된 모집글
+     * @throws BusinessException 대상이 없으면 404, 모집자가 아니면 403,
+     *         마감된 모집글이면 400, 정원이 수락 인원보다 작으면 400
      */
     @Transactional
     public StudyDetailResponse update(Long id, String title, String content, int capacity,
@@ -109,6 +136,13 @@ public class StudyService {
         return StudyDetailResponse.of(post, accepted);
     }
 
+    /**
+     * 모집글을 삭제함.
+     *
+     * @param id 모집글 식별자
+     * @param memberId 토큰에서 확인한 회원 식별자
+     * @throws BusinessException 대상이 없으면 404, 모집자가 아니면 403
+     */
     @Transactional
     public void delete(Long id, Long memberId) {
         StudyPost post = getWithWriter(id);
@@ -122,9 +156,14 @@ public class StudyService {
     }
 
     /**
-     * 마감.
+     * 모집글을 마감함.
      *
      * 대기 상태의 신청은 그대로 둠. 모집자가 개별로 처리함.
+     *
+     * @param id 모집글 식별자
+     * @param memberId 토큰에서 확인한 회원 식별자
+     * @return 마감된 모집글
+     * @throws BusinessException 대상이 없으면 404, 모집자가 아니면 403, 이미 마감이면 400
      */
     @Transactional
     public StudyDetailResponse close(Long id, Long memberId) {
