@@ -50,9 +50,10 @@ public class StudyController {
     }
 
     /**
-     * 상세 조회.
+     * 모집글 상세를 조회함. 손님도 볼 수 있어 인증을 요구하지 않음. EP-02.
      *
-     * 손님도 볼 수 있어 인증을 요구하지 않음.
+     * @param id 모집글 식별자
+     * @return 모집글 상세, 200
      */
     @GetMapping("/{id}")
     public StudyDetailResponse findOne(@PathVariable Long id) {
@@ -60,9 +61,11 @@ public class StudyController {
     }
 
     /**
-     * 등록.
+     * 모집글을 등록함. 모집자를 본문으로 받지 않고 토큰에서 확인함. 받으면 위조가 가능함. EP-03.
      *
-     * 모집자를 본문으로 받지 않고 토큰에서 확인함. 받으면 위조가 가능함.
+     * @param request 제목 · 내용 · 정원 · 마감일
+     * @param memberId 토큰에서 확인한 회원 식별자, 모집자가 됨
+     * @return 등록된 모집글, 201과 Location 머리
      */
     @PostMapping
     public ResponseEntity<StudyDetailResponse> create(@Valid @RequestBody StudyRequest request,
@@ -73,6 +76,14 @@ public class StudyController {
         return ResponseEntity.created(URI.create("/api/studies/" + created.id())).body(created);
     }
 
+    /**
+     * 모집글을 수정함. EP-04.
+     *
+     * @param id 모집글 식별자
+     * @param request 제목 · 내용 · 정원 · 마감일
+     * @param memberId 토큰에서 확인한 회원 식별자
+     * @return 수정된 모집글, 200
+     */
     @PutMapping("/{id}")
     public StudyDetailResponse update(@PathVariable Long id,
                                       @Valid @RequestBody StudyRequest request,
@@ -82,9 +93,11 @@ public class StudyController {
     }
 
     /**
-     * 삭제.
+     * 모집글을 삭제함. 돌려줄 내용이 없으므로 204 로 응답함. EP-05.
      *
-     * 돌려줄 내용이 없으므로 204 로 응답함.
+     * @param id 모집글 식별자
+     * @param memberId 토큰에서 확인한 회원 식별자
+     * @return 204
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id,
@@ -94,9 +107,11 @@ public class StudyController {
     }
 
     /**
-     * 마감.
+     * 모집글을 마감함. 본문이 없음, 주소만으로 무엇을 할지 결정함. EP-06.
      *
-     * 본문이 없음. 주소만으로 무엇을 할지 결정함.
+     * @param id 모집글 식별자
+     * @param memberId 토큰에서 확인한 회원 식별자
+     * @return 마감된 모집글, 200
      */
     @PatchMapping("/{id}/close")
     public StudyDetailResponse close(@PathVariable Long id,
