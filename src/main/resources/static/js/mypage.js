@@ -40,6 +40,26 @@ async function loadMyStudies() {
      *             조각은 parts.html 의 "마이페이지 목록 항목"
      * 동작결과    EP-16 · 제목을 누르면 상세로 이동
      */
+    const studies = await api.get('/api/members/me/studies');
+
+    document.querySelector('#study-count').textContent = studies.length;
+
+    const container = document.querySelector('#my-studies');
+
+    if (studies.length === 0) {
+        container.innerHTML = '<div class="item-meta">등록한 모집글이 없습니다.</div>';
+        return;
+    }
+
+    container.innerHTML = studies.map(study => `
+    <div class="item ${study.status === 'CLOSED' ? 'is-closed' : ''}">
+        <div class="item-title">
+            <a href="/study/${study.id}">${escapeHtml(study.title)}</a>
+            ${badge(study.status)}
+        </div>
+        <span class="item-meta">${study.acceptedCount} / ${study.capacity}명</span>
+    </div>
+`).join('');
 }
 
 async function loadMyApplications() {
@@ -55,6 +75,28 @@ async function loadMyApplications() {
      * 그릴위치    SC-04 · #application-count 와 #my-applications
      * 동작결과    EP-17 · 취소는 상세 화면에서만 함
      */
+    const applications = await api.get('/api/members/me/applications');
+
+    document.querySelector('#application-count').textContent = applications.length;
+
+    const container = document.querySelector('#my-applications');
+
+    if (applications.length === 0) {
+        container.innerHTML = '<div class="item-meta">신청한 모집글이 없습니다.</div>';
+        return;
+    }
+
+    container.innerHTML = applications.map(application => `
+    <div class="item">
+        <div class="item-title">
+            <a href="/study/${application.studyPostId}">
+                ${escapeHtml(application.studyPostTitle)}
+            </a>
+            ${badge(application.status)}
+        </div>
+        <span class="item-meta">${shortDate(application.createdAt)}</span>
+    </div>
+`).join('');
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
