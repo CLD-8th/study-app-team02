@@ -25,6 +25,9 @@ todo 브랜치에서 작업 다 끝내고 실행하면 됨. 순서대로 확인�
 chmod +x scripts/push.sh
 ```
 
-## push.command
+## 더블클릭으로 실행
 
-터미널이 아직 낯설면 이거. Finder에서 `push.command` 더블클릭하면 터미널이 열리고 push.sh가 자동으로 돌아감. 맥에서만 됨.
+터미널이 아직 낯설면 이거.
+
+- 맥: `push.command` 더블클릭
+- 윈도우: `push.bat` 더블클릭 (Git Bash 설치돼 있어야 함, 강의 기준 세팅이면 이미 있음)
