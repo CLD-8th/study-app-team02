@@ -132,6 +132,14 @@ public class ReviewService {
      * 반환형태    boolean
      * 동작결과    모집자와 수락된 신청자만 후기 입력란이 보임
      */
-        throw new UnsupportedOperationException("TODO 55");
+        if (post.isWrittenBy(memberId)) {
+            return true;
+        }
+
+        return applicationRepository.existsByStudyPostIdAndApplicantIdAndStatusIn(
+                post.getId(),
+                memberId,
+                List.of(ApplicationStatus.ACCEPTED)
+        );
     }
 }
