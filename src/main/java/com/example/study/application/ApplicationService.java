@@ -113,7 +113,10 @@ public class ApplicationService {
      * 반환형태    List<ApplicationResponse>
      * 동작결과    EP-17 · 상세 화면의 신청 구획도 이 값을 씀
      */
-        throw new UnsupportedOperationException("TODO 64");
+        return applicationRepository.findByApplicantIdOrderByCreatedAtDesc(memberId)
+                .stream()
+                .map(ApplicationResponse::from)
+                .toList();
     }
 
     /**
