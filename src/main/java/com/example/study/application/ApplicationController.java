@@ -53,14 +53,29 @@ public class ApplicationController {
         return applicationService.findByStudy(studyId, memberId);
     }
 
-    /*
-     * TODO 46 · 신청 처리 주소 나머지 둘
+    /**
+     * 신청을 수락함. EP-10.
      *
-     * 기능        PATCH /api/applications/{id}/accept
-     *             PATCH /api/applications/{id}/reject 를 만듦
-     * 활용메소드  ApplicationService.accept()       TODO 43 · 같은 담당
-     *             ApplicationService.reject()       TODO 44 · 같은 담당
-     * 반환형태    ApplicationResponse
-     * 동작결과    EP-10 · EP-11
+     * @param id 신청 식별자
+     * @param memberId 토큰에서 확인한 회원 식별자
+     * @return 수락된 신청, 200
      */
+    @PatchMapping("/api/applications/{id}/accept")
+    public ApplicationResponse accept(@PathVariable Long id,
+                                       @AuthenticationPrincipal Long memberId) {
+        return applicationService.accept(id, memberId);
+    }
+
+    /**
+     * 신청을 거절함. EP-11.
+     *
+     * @param id 신청 식별자
+     * @param memberId 토큰에서 확인한 회원 식별자
+     * @return 거절된 신청, 200
+     */
+    @PatchMapping("/api/applications/{id}/reject")
+    public ApplicationResponse reject(@PathVariable Long id,
+                                       @AuthenticationPrincipal Long memberId) {
+        return applicationService.reject(id, memberId);
+    }
 }
