@@ -40,18 +40,13 @@ public class StudyService {
     @Transactional
     public StudyDetailResponse create(String title, String content, int capacity,
                                       LocalDate deadline, Long memberId) {
-    /*
-     * TODO 21 · 모집글 등록
-     *
-     * 기능        토큰에서 온 식별자로 모집자를 찾아 새 모집글을 저장함
-     *             갓 만든 글이므로 수락 인원은 0
-     * 활용메소드  MemberService.getMember()   제공됨
-     *             StudyPostRepository.save()  제공됨
-     *             StudyDetailResponse.of()    제공됨
-     * 반환형태    StudyDetailResponse · TODO.md 응답 형태 참고
-     * 동작결과    EP-03 · 201 과 Location 머리 · 상태는 RECRUITING
-     */
-        throw new UnsupportedOperationException("TODO 21");
+        Member writer = memberService.getMember(memberId);
+        StudyPost saved = studyPostRepository.save(
+                new StudyPost(title, content, capacity, deadline, writer));
+
+        log.info("모집글 등록: id={} · writerId={}", saved.getId(), memberId);
+        // 갓 만든 글이므로 수락 인원은 0.
+        return StudyDetailResponse.of(saved, 0);
     }
 
     /**
@@ -77,17 +72,8 @@ public class StudyService {
     }
 
     public StudyDetailResponse findById(Long id) {
-    /*
-     * TODO 22 · 모집글 상세 조회
-     *
-     * 기능        대상을 찾고 수락 인원을 세어 함께 담음
-     * 활용메소드  StudyService.getWithWriter()   제공됨
-     *             StudyService.countAccepted()   같은 클래스 · 제공됨
-     *             StudyDetailResponse.of()       제공됨
-     * 반환형태    StudyDetailResponse
-     * 동작결과    EP-02 · 200 과 상세 · 없는 번호는 404 NOT_FOUND
-     */
-        throw new UnsupportedOperationException("TODO 22");
+        StudyPost post = getWithWriter(id);
+        return StudyDetailResponse.of(post, countAccepted(id));
     }
 
     /**
@@ -102,38 +88,37 @@ public class StudyService {
     @Transactional
     public StudyDetailResponse update(Long id, String title, String content, int capacity,
                                       LocalDate deadline, Long memberId) {
-    /*
-     * TODO 23 · 모집글 수정
-     *
-     * 기능        모집자 본인인지 → 모집 중인지 → 정원이 수락 인원 이상인지 순서로 판단
-     *             마감된 글을 수정하면 정원과 상태가 어긋남
-     *             정원을 수락 인원보다 줄이면 인원이 정원을 넘는 상태가 됨
-     * 활용메소드  StudyService.getWithWriter()   제공됨
-     *             StudyService.countAccepted()   같은 클래스 · 제공됨
-     *             StudyPost.isWrittenBy()        엔티티 · 제공됨
-     *             StudyPost.isRecruiting()       엔티티 · 제공됨
-     *             StudyPost.update()             엔티티 · 제공됨
-     *             BusinessException              공통 · 제공됨
-     * 반환형태    StudyDetailResponse
-     * 동작결과    EP-04 · 남의 글 403 FORBIDDEN · 마감된 글 400 STUDY_CLOSED
-     *             정원 축소 400 CAPACITY_BELOW_ACCEPTED
-     */
-        throw new UnsupportedOperationException("TODO 23");
+        StudyPost post = getWithWriter(id);
+
+        if (!post.isWrittenBy(memberId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN, "모집자만 수정 가능");
+        }
+        if (!post.isRecruiting()) {
+            throw new BusinessException(ErrorCode.STUDY_CLOSED, "마감된 모집글은 수정 불가");
+        }
+
+        long accepted = countAccepted(id);
+        if (capacity < accepted) {
+            throw new BusinessException(ErrorCode.CAPACITY_BELOW_ACCEPTED,
+                    "정원은 현재 수락 인원 " + accepted + "명보다 작을 수 없음");
+        }
+
+        post.update(title, content, capacity, deadline);
+
+        log.info("모집글 수정: id={}", id);
+        return StudyDetailResponse.of(post, accepted);
     }
 
     @Transactional
     public void delete(Long id, Long memberId) {
-    /*
-     * TODO 24 · 모집글 삭제
-     *
-     * 기능        모집자 본인인지 확인한 뒤 지움
-     * 활용메소드  StudyService.getWithWriter()   제공됨
-     *             StudyPost.isWrittenBy()        엔티티 · 제공됨
-     *             StudyPostRepository.delete()   제공됨
-     * 반환형태    없음
-     * 동작결과    EP-05 · 204 · 남의 글은 403 FORBIDDEN
-     */
-        throw new UnsupportedOperationException("TODO 24");
+        StudyPost post = getWithWriter(id);
+
+        if (!post.isWrittenBy(memberId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN, "모집자만 삭제 가능");
+        }
+        studyPostRepository.delete(post);
+
+        log.info("모집글 삭제: id={}", id);
     }
 
     /**
@@ -143,19 +128,20 @@ public class StudyService {
      */
     @Transactional
     public StudyDetailResponse close(Long id, Long memberId) {
-    /*
-     * TODO 25 · 모집 마감
-     *
-     * 기능        모집자 본인인지 → 모집 중인지 확인한 뒤 상태를 마감으로 바꿈
-     *             대기 상태의 신청은 그대로 둠 · 모집자가 개별로 처리함
-     * 활용메소드  StudyService.getWithWriter()   제공됨
-     *             StudyPost.isWrittenBy()        엔티티 · 제공됨
-     *             StudyPost.isRecruiting()       엔티티 · 제공됨
-     *             StudyPost.close()              엔티티 · 제공됨
-     * 반환형태    StudyDetailResponse
-     * 동작결과    EP-06 · 상태가 CLOSED · 이미 마감이면 400 STUDY_CLOSED
-     */
-        throw new UnsupportedOperationException("TODO 25");
+        StudyPost post = getWithWriter(id);
+
+        if (!post.isWrittenBy(memberId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN, "모집자만 마감 가능");
+        }
+        if (!post.isRecruiting()) {
+            throw new BusinessException(ErrorCode.STUDY_CLOSED, "이미 마감된 모집글");
+        }
+
+        // 상태 전이는 내용 수정이 아니므로 updatedAt 을 건드리지 않음.
+        post.close();
+
+        log.info("모집 마감: id={}", id);
+        return StudyDetailResponse.of(post, countAccepted(id));
     }
 
     public List<StudyListResponse> findMine(Long memberId) {
