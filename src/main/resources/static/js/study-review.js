@@ -59,18 +59,55 @@ StudyPage.register(async function renderReviews() {
     });
 
     /*
-     * TODO 58 · 후기 등록과 삭제
-     *
-     * 기능        평점과 내용을 보내고 성공하면 다시 그림
-     *             삭제는 확인을 받은 뒤 요청함
-     *             항목별 사유가 오면 입력란 아래에 표시함
-     * 활용메소드  api.post() · api.del()   api.js · 제공됨
-     *             StudyPage.reload()       제공됨
-     *             showFieldErrors() · showError()   common.js · 제공됨
-     *             POST · DELETE 후기 주소   TODO 56 · 같은 담당
-     * 받는자료    ReviewResponse · 실패는 ErrorResponse
-     * 그릴위치    SC-02 · #review-error · #write-review · data-review
-     * 동작결과    두 번째 작성은 400 DUPLICATE_REVIEW
-     *             남의 후기에는 삭제 단추가 없음
      */
+    // TODO 58 · 후기 등록과 삭제
+
+// 1. 후기 등록 (이벤트 리스너 또는 등록 함수)
+    async function submitReview(studyPostId, rating, content) {
+        try {
+            // 평점과 내용을 보내고 요청
+            await api.post(`/api/studies/${studyPostId}/reviews`, {
+                rating: rating,
+                content: content
+            });
+
+            // 성공하면 화면 다시 그림
+            StudyPage.reload();
+        } catch (error) {
+            // 실패 시 ErrorResponse 처리
+            if (error.response && error.response.data) {
+                const errData = error.response.data;
+
+                // 항목별 사유(fieldErrors)가 오면 입력란 아래에 표시
+                if (errData.fieldErrors) {
+                    showFieldErrors(errData.fieldErrors);
+                } else {
+                    showError('#review-error', errData.message || '후기 등록 실패');
+                }
+            } else {
+                showError('#review-error', '오류가 발생했습니다.');
+            }
+        }
+    }
+
+// 2. 후기 삭제 (이벤트 리스너 또는 삭제 함수)
+    async function deleteReview(studyPostId, reviewId) {
+        // 삭제는 확인을 받은 뒤 요청함
+        if (!confirm('후기를 삭제하시겠습니까?')) {
+            return;
+        }
+
+        try {
+            await api.del(`/api/studies/${studyPostId}/reviews/${reviewId}`);
+
+            // 성공하면 화면 다시 그림
+            StudyPage.reload();
+        } catch (error) {
+            if (error.response && error.response.data) {
+                showError('#review-error', error.response.data.message || '후기 삭제 실패');
+            } else {
+                showError('#review-error', '삭제 처리 중 오류가 발생했습니다.');
+            }
+        }
+    }
 });
