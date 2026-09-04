@@ -19,6 +19,12 @@ ok() {
     echo -e "${GREEN}✓ $1${NC}"
 }
 
+git rev-parse --is-inside-work-tree > /dev/null 2>&1 || fail "git 저장소 안에서 실행하기"
+
+echo "== 0. 원격 최신화 =="
+git fetch origin main -q || fail "origin/main 을 못 받아옴, 네트워크 확인하기"
+ok "origin/main 확인함"
+
 echo "== 1. 브랜치 확인 =="
 BRANCH=$(git branch --show-current)
 
@@ -34,12 +40,13 @@ fi
 ok "브랜치: $BRANCH"
 
 echo "== 2. 변경 사항 확인 =="
-if [ -z "$(git status --porcelain)" ] && [ -z "$(git log origin/main..HEAD 2>/dev/null)" ]; then
+UNPUSHED=$(git log origin/main..HEAD --oneline 2>/dev/null || true)
+if [ -z "$(git status --porcelain)" ] && [ -z "$UNPUSHED" ]; then
     fail "push할 변경 사항이 없음"
 fi
 
 echo "== 3. 안 고칠 파일 확인 =="
-CHANGED=$(git diff --name-only origin/main...HEAD 2>/dev/null; git diff --name-only --cached; git diff --name-only)
+CHANGED=$( { git diff --name-only origin/main...HEAD 2>/dev/null; git diff --name-only --cached; git diff --name-only; } || true)
 BLOCKED_PATTERN='^src/main/resources/static/(study\.html|css/style\.css|js/(common|api|study-page)\.js)$'
 BLOCKED=$(echo "$CHANGED" | sort -u | grep -E "$BLOCKED_PATTERN" || true)
 if [ -n "$BLOCKED" ]; then
@@ -49,11 +56,10 @@ fi
 ok "안 고칠 파일 건드리지 않음"
 
 echo "== 4. 커밋 메시지 확인 =="
-if [ -n "$(git log origin/main..HEAD --format=%B 2>/dev/null)" ]; then
-    MSGS=$(git log origin/main..HEAD --format=%B)
-    if echo "$MSGS" | grep -iE 'claude|anthropic|co-authored-by' > /dev/null; then
-        fail "커밋 메시지에 AI 도구 관련 문구가 남아있음, 확인 후 다시 커밋하기"
-    fi
+AI_PATTERN='claude|anthropic|co-authored-by'
+EXISTING_MSGS=$(git log origin/main..HEAD --format=%B 2>/dev/null || true)
+if [ -n "$EXISTING_MSGS" ] && echo "$EXISTING_MSGS" | grep -iE "$AI_PATTERN" > /dev/null; then
+    fail "커밋 메시지에 AI 도구 관련 문구가 남아있음, 확인 후 다시 커밋하기"
 fi
 ok "커밋 메시지 확인됨"
 
@@ -62,7 +68,7 @@ if [ -n "$(git status --porcelain)" ]; then
     git status --short
     read -p "커밋 메시지를 입력 (예: feat: 신청 목록 조회): " MSG
     [ -n "$MSG" ] || fail "커밋 메시지가 비어있음"
-    if echo "$MSG" | grep -iE 'claude|anthropic' > /dev/null; then
+    if echo "$MSG" | grep -iE "$AI_PATTERN" > /dev/null; then
         fail "커밋 메시지에 AI 도구 관련 문구가 있음"
     fi
     git add -A
@@ -88,9 +94,10 @@ read -p "진행할까? (y/n) " CONFIRM
 git push -u origin "$BRANCH"
 ok "push 완료"
 
-if command -v gh > /dev/null; then
+if command -v gh > /dev/null && gh auth status > /dev/null 2>&1; then
     echo "== PR 생성 =="
     gh pr create --base main --head "$BRANCH" --fill --web
 else
-    echo -e "${YELLOW}! gh 명령이 없어서 PR은 직접 만들어야 함. 위에 뜬 링크를 열기.${NC}"
+    echo -e "${YELLOW}! gh 로그인이 안 되어 있어서 PR은 직접 만들어야 함.${NC}"
+    echo "https://github.com/CLD-8th/study-app-team02/pull/new/$BRANCH"
 fi
