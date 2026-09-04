@@ -3,4 +3,4 @@
 cd "$(dirname "$0")/.." || exit 1
 ./scripts/push.sh
 echo ""
-read -p "끝났음, 엔터 누르면 창 닫힘 " _
+read -p "완료. 엔터 입력 시 종료: " _

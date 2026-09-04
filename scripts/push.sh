@@ -34,7 +34,7 @@ fi
 
 if ! [[ "$BRANCH" =~ ^todo/[0-9]+(-[0-9]+)?$ ]]; then
     echo -e "${YELLOW}! 브랜치 이름이 todo/번호 형식이 아님: $BRANCH${NC}"
-    read -p "그래도 계속할까? (y/n) " CONTINUE
+    read -p "계속 진행 (y/n): " CONTINUE
     [ "$CONTINUE" = "y" ] || exit 0
 fi
 ok "브랜치: $BRANCH"
@@ -66,7 +66,7 @@ ok "커밋 메시지 확인됨"
 echo "== 5. 커밋되지 않은 변경이 있으면 지금 커밋 =="
 if [ -n "$(git status --porcelain)" ]; then
     git status --short
-    read -p "커밋 메시지를 입력 (예: feat: 신청 목록 조회): " MSG
+    read -p "커밋 메시지 (예: feat: 신청 목록 조회): " MSG
     [ -n "$MSG" ] || fail "커밋 메시지가 비어있음"
     if echo "$MSG" | grep -iE "$AI_PATTERN" > /dev/null; then
         fail "커밋 메시지에 AI 도구 관련 문구가 있음"
@@ -85,10 +85,10 @@ else
 fi
 
 echo ""
-echo "여기까지 문제없음. 다음을 실행함:"
+echo "확인 완료. 실행 예정:"
 echo "  git push -u origin $BRANCH"
-echo "  이후 PR 생성 화면으로 이동"
-read -p "진행할까? (y/n) " CONFIRM
+echo "  PR 생성"
+read -p "진행 (y/n): " CONFIRM
 [ "$CONFIRM" = "y" ] || exit 0
 
 git push -u origin "$BRANCH"
