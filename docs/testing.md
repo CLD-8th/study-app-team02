@@ -4,11 +4,7 @@ Postman 없이 터미널 curl 만으로 자기 TODO를 확인하는 법. 순서�
 
 ## 0. 준비
 
-앱이 기동돼 있어야 함(`localhost:8090`). 샘플 자료가 들어있어야 아래 예시가 그대로 됨.
-
-```bash
-mysql -u study -pStudy!1234 study_app < db/sample.sql
-```
+앱이 기동돼 있어야 함(`localhost:8090`). 샘플 자료(README "샘플 자료" 절 참고)가 들어있어야 아래 예시가 그대로 됨.
 
 **샘플 계정** (전부 비밀번호 `1234`)
 
