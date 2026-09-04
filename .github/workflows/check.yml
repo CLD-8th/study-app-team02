@@ -15,11 +15,7 @@ jobs:
       - name: 커밋 메시지 확인
         run: |
           MSGS=$(git log --format=%B origin/${{ github.base_ref }}..HEAD)
-          if echo "$MSGS" | grep -iE 'claude|anthropic|co-authored-by' > /dev/null; then
-            echo "커밋 메시지에 AI 도구 관련 문구가 포함됨"
-            exit 1
-          fi
-          echo "통과"
+          echo "$MSGS" | grep -iE 'claude|anthropic|co-authored-by' > /dev/null && exit 1 || exit 0
 
       - name: 안 고칠 파일 확인
         run: |
