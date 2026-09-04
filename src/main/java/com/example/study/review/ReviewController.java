@@ -4,6 +4,7 @@ import com.example.study.review.dto.ReviewRequest;
 import com.example.study.review.dto.ReviewResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,14 +24,36 @@ public class ReviewController {
 
     /*
      * TODO 56 · 후기 주소 셋
-     *
-     * 기능        GET /api/studies/{studyId}/reviews 는 손님도 볼 수 있음
-     *             POST 는 201 · DELETE 는 204
-     * 활용메소드  ReviewService.findByStudy()   TODO 52 · 같은 담당
-     *             ReviewService.create()        TODO 53 · 같은 담당
-     *             ReviewService.delete()        TODO 54 · 같은 담당
-     * 반환형태    List<ReviewResponse> · ReviewResponse
-     * 동작결과    EP-12 · EP-13 · EP-14 · 목록은 토큰 없이 200
-     */
 
+     */
+    // 후기 목록 조회 (손님도 볼 수 있음, 토큰 없음)
+    @GetMapping("/api/studies/{studyId}/reviews")
+    public ResponseEntity<List<ReviewResponse>> findByStudy(@PathVariable Long studyId) {
+        List<ReviewResponse> response = reviewService.findByStudy(studyId);
+        return ResponseEntity.ok(response);
+    }
+
+
+    // 후기 등록 (POST 201)
+    @PostMapping("/api/studies/{studyId}/reviews")
+    public ResponseEntity<ReviewResponse> create(
+            @PathVariable Long studyId,
+            @RequestBody ReviewSaveRequest request,
+            @AuthenticationPrincipal AuthMember authMember) {
+        ReviewResponse response = reviewService.create(
+                studyId,
+                request.content(),
+                request.rating(),
+                authMember.getId()
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+    // 후기 삭제 (DELETE 204)
+    @DeleteMapping("/api/studies/{studyId}/reviews/{reviewId}")
+    public ResponseEntity<Void> delete(
+            @PathVariable Long reviewId,
+            @AuthenticationPrincipal AuthMember authMember) {
+        reviewService.delete(reviewId, authMember.getId());
+        return ResponseEntity.noContent().build();
+    }
 }
