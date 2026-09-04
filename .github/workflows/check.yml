@@ -9,10 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: 안 고칠 파일 확인
         run: |
-          CHANGED=$(git diff --name-only origin/main...HEAD)
+          CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
           PATTERN='^src/main/resources/static/(study\.html|css/style\.css|js/(common|api|study-page)\.js)$'
           BLOCKED=$(echo "$CHANGED" | grep -E "$PATTERN" || true)
           if [ -n "$BLOCKED" ]; then
@@ -27,5 +29,7 @@ jobs:
           distribution: temurin
           java-version: '21'
 
+      - uses: gradle/actions/setup-gradle@v4
+
       - name: 컴파일 확인
-        run: ./gradlew compileJava --no-daemon
+        run: gradle compileJava --no-daemon
