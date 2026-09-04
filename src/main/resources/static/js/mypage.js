@@ -17,6 +17,13 @@ async function loadProfile() {
      *             조각은 parts.html 의 "마이페이지 내 정보"
      * 동작결과    EP-15 · 토큰이 없으면 로그인 화면으로 보내짐
      */
+    const member = await api.get('/api/members/me');
+
+    document.querySelector('#profile').innerHTML = `
+    <div>이메일 &nbsp; ${escapeHtml(member.email)}</div>
+    <div>별명 &nbsp; <b>${escapeHtml(member.nickname)}</b></div>
+    <div>가입일 &nbsp; ${escapeHtml(member.createdAt.slice(0, 10))}</div>
+`;
 }
 
 async function loadMyStudies() {
