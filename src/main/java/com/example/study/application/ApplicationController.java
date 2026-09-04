@@ -27,18 +27,53 @@ import java.util.List;
 public class ApplicationController {
 
     private final ApplicationService applicationService;
+    /*
+     * 스터디 참여 신청 요청을 처리한다.
+     *
+     * 모집글 번호는 URL 경로에서 받고, 신청 메시지는 요청 본문에서 받는다.
+     * 신청자 번호는 사용자가 직접 입력한 값이 아니라 인증된 토큰에서 가져온다.
+     *
+     * 신청이 정상적으로 생성되면 HTTP 201 Created와 신청 정보를 반환한다.
+     */
+    @PostMapping("/api/studies/{studyId}/applications")
+    public ResponseEntity<ApplicationResponse> apply(
+            @PathVariable Long studyId,
+            @Valid @RequestBody ApplicationRequest request,
+            @AuthenticationPrincipal Long memberId
+    ) {
+        // TODO 31에서 구현한 신청 서비스를 호출
+        // 메시지 길이 검증은 @Valid를 통해 서비스 호출 전에 처리된다.
+        ApplicationResponse created = applicationService.apply(
+                studyId,
+                request.message(),
+                memberId
+        );
+
+        // 새로운 신청이 생성됐으니 HTTP 201 Created와 신청 정보를 반환
+        return ResponseEntity.status(201).body(created);
+    }
 
     /*
-     * TODO 33 · 신청과 취소 주소
+     * 대기 상태의 참여 신청 취소 요청을 처리한다.
      *
-     * 기능        POST /api/studies/{studyId}/applications 와
-     *             DELETE /api/applications/{id} 를 만듦
-     *             신청은 201 · 취소는 204
-     * 활용메소드  ApplicationService.apply()    TODO 31 · 같은 담당
-     *             ApplicationService.cancel()   TODO 32 · 같은 담당
-     * 반환형태    ApplicationResponse · 취소는 없음
-     * 동작결과    EP-07 · EP-08
+     * 취소할 신청 번호는 URL 경로에서 받고,
+     * 신청자 번호는 인증된 토큰에서 가져온다.
+     *
+     * 취소가 완료되면 반환할 내용이 없으므로 HTTP 204 No Content를 반환한다.
      */
+
+    @DeleteMapping("/api/applications/{id}")
+    public ResponseEntity<Void> cancel(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Long memberId
+    ) {
+        // TODO 32에서 구현한 신청 취소 서비스를 호출함
+        // 신청자 본인 및 PENDING 상태 여부는 서비스 계층에서 판단함
+        applicationService.cancel(id, memberId);
+
+        // 신청이 삭제됐고 반환할게 없으니 HTTP 204 응답
+        return ResponseEntity.noContent().build();
+    }
 
     /*
      * TODO 46 · 신청 처리 주소 셋
