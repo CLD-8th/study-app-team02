@@ -8,20 +8,55 @@
 StudyPage.register(async function renderReviews() {
     /*
      * TODO 57 · 후기 목록과 입력란
-     *
-     * 기능        후기 목록을 조회해 그림 · 손님도 볼 수 있음
-     *             입력란은 로그인 · 마감 · 참여자 · 미작성을 모두 만족할 때만 둠
-     *             참여자는 모집자이거나 내 신청이 수락된 경우임
-     *             자기 후기에만 삭제 단추를 둠
-     * 활용메소드  StudyPage.isOwner() · StudyPage.myApplication   제공됨
-     *             auth.memberId                                  api.js · 제공됨
-     *             api.get() · dateTime() · escapeHtml()          제공됨
-     *             GET /api/studies/{id}/reviews                  TODO 56 · 같은 담당
-     * 받는자료    List<ReviewResponse> · writerId 로 내 후기를 가림
-     * 그릴위치    SC-02 · #review-panel
-     *             조각은 parts.html 의 "후기 입력" 과 "후기 항목"
-     * 동작결과    모집 중에는 입력란이 없음 · 신청하지 않은 사람도 목록은 보임
      */
+    StudyPage.register(async function renderReviews() {
+        const $panel = document.querySelector('#review-panel');
+        if (!$panel) return;
+
+        try {
+            // 1. 후기 데이터 조회
+            const reviews = await api.get(`/api/studies/${StudyPage.studyId}/reviews`);
+
+            const memberId = auth.memberId;
+            const myApp = StudyPage.myApplication;
+
+            // 조건 판단 (참여자 여부 & 작성 여부)
+            const isParticipant = StudyPage.isOwner() || myApp?.status === 'ACCEPTED';
+            const hasWritten = memberId && reviews.some(r => r.writerId === memberId);
+
+            // 입력란 표시 조건: 로그인 + 마감됨 + 참여자 + 미작성
+            const canWrite = memberId && !StudyPage.study.isRecruiting && isParticipant && !hasWritten;
+
+            // 2. 입력란 HTML
+            let html = canWrite ? `
+            <div class="review-form">
+                <textarea id="review-content"></textarea>
+                <button id="btn-submit">등록</button>
+            </div>
+        ` : '';
+
+            // 3. 후기 목록 HTML
+            if (reviews?.length) {
+                html += '<ul class="review-list">';
+                reviews.forEach(r => {
+                    const isMyReview = memberId && r.writerId === memberId;
+                    html += `
+                    <li>
+                        <span>${escapeHtml(r.writerName)}</span>
+                        <span>${dateTime(r.createdAt)}</span>
+                        <p>${escapeHtml(r.content)}</p>
+                        ${isMyReview ? '<button class="btn-delete">삭제</button>' : ''}
+                    </li>
+                `;
+                });
+                html += '</ul>';
+            }
+
+            $panel.innerHTML = html;
+        } catch (err) {
+            console.error(err);
+        }
+    });
 
     /*
      * TODO 58 · 후기 등록과 삭제
