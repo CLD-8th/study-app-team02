@@ -51,11 +51,11 @@ public class Review {
     // ── 예비 열
     private LocalDateTime updatedAt;
 
-    public Review(StudyPost content, Member rating, String studyPost, int writer) {
-        this.content = content;
-        this.rating = rating;
+    public Review(StudyPost studyPost, Member writer, String content, int rating) {
         this.studyPost = studyPost;
         this.writer = writer;
+        this.content = content;
+        this.rating = rating;
         this.createdAt = LocalDateTime.now();
     }
 

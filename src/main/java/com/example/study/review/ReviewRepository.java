@@ -15,7 +15,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
      * 작성자를 함께 가져와 목록 건수만큼 조회가 늘어나지 않게 함.
      */
     /*
-     * DTODO 51 · 후기 규약
+     * TODO 51 · 후기 규약
      */
     @Query("select r from Review r join fetch r.writer where r.studyPost.id = :studyPostId order by r.id asc")
     List<Review> findByStudyPostIdOrderByIdAsc(@Param("studyPostId") Long studyPostId);
