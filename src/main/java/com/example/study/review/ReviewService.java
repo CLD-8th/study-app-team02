@@ -11,6 +11,7 @@ import com.example.study.study.StudyPost;
 import com.example.study.study.StudyService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.ProtocolHandler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,62 +35,82 @@ public class ReviewService {
     private final MemberService memberService;
 
     public List<ReviewResponse> findByStudy(Long studyPostId) {
-    /*
-     * TODO 52 · 후기 목록 조회
-     *
-     * 기능        모집글 식별자로 오래된 순으로 조회함 · 손님도 볼 수 있음
-     * 활용메소드  ReviewRepository 의 후기 규약   TODO 51 · 같은 담당
-     *             ReviewResponse.from()         제공됨
-     * 반환형태    List<ReviewResponse>
-     * 동작결과    EP-12 · 토큰 없이도 200
-     */
-        throw new UnsupportedOperationException("TODO 52");
+        /*
+         * TODO 52 · 후기 목록 조회
+         *
+         * 기능        모집글 식별자로 오래된 순으로 조회함 · 손님도 볼 수 있음
+         * 활용메소드  ReviewRepository 의 후기 규약   TODO 51 · 같은 담당
+         *             ReviewResponse.from()         제공됨
+         * 반환형태    List<ReviewResponse>
+         * 동작결과    EP-12 · 토큰 없이도 200
+         */
+        List<Review> reviews = reviewRepository.findByStudyPostIdOrderByIdAsc(studyPostId);
+
+        return reviews.stream()
+                .map(ReviewResponse::from)
+                .toList();
     }
 
     /**
      * 후기 등록.
-     *
+     * <p>
      * 순서는 대상 확인 · 마감 여부 · 참여 여부 · 중복임.
      */
     @Transactional
     public ReviewResponse create(Long studyPostId, String content, int rating, Long memberId) {
-    /*
-     * TODO 53 · 후기 등록
-     *
-     * 기능        대상 확인 → 마감 여부 → 참여 여부 → 중복 순서로 판단
-     * 활용메소드  StudyService.getWithWriter()      제공됨
-     *             StudyPost.isRecruiting()         엔티티 · 제공됨
-     *             ReviewService.isParticipant()    같은 클래스 · TODO 55
-     *             ReviewRepository 의 후기 규약       TODO 51 · 같은 담당
-     *             MemberService.getMember()        제공됨
-     * 반환형태    ReviewResponse
-     * 동작결과    EP-13 · 201 · 모집 중이면 400 STUDY_NOT_CLOSED
-     *             참여자가 아니면 403 · 두 번째는 400 DUPLICATE_REVIEW
-     */
-        throw new UnsupportedOperationException("TODO 53");
+        /*
+         * TODO 53 · 후기 등록
+
+         */
+        StudyPost studyPost = studyService.getWithWriter(studyPostId);
+
+        if (studyPost.isRecruiting()) {
+            throw new IllegalArgumentException("모집 중인 스터디에는 후기를 남길 수 없습니다.");
+        }
+
+        if (!isParticipant(studyPost, memberId)) {
+            throw new IllegalArgumentException("스터디 참여자만 후기를 남길 수 있습니다.");
+        }
+
+        if (reviewRepository.existsByWriterIdAndStudyPostId(memberId, studyPostId)) {
+            throw new IllegalArgumentException("이미 후기를 작성했습니다.");
+        }
+
+        Member writer = memberService.getMember(memberId);
+        Review review = reviewRepository.save(new Review(studyPost, writer, content, rating));
+
+        return ReviewResponse.from(review);
     }
 
     /**
      * 후기 삭제.
-     *
+     * <p>
      * 모집자에게 삭제 권한을 주지 않음.
      * 낮은 평점을 지울 수 있게 되어 후기의 의미가 사라짐.
      */
-    @Transactional
-    public void delete(Long reviewId, Long memberId) {
-    /*
-     * TODO 54 · 후기 삭제
-     *
-     * 기능        작성자 본인인지 확인한 뒤 지움
-     *             모집자에게 삭제 권한을 주지 않음 · 낮은 평점을 지울 수 있게 됨
-     * 활용메소드  ReviewRepository.findById()   제공됨
-     *             Review.isWrittenBy()          엔티티 · 제공됨
-     *             ReviewRepository.delete()     제공됨
-     * 반환형태    없음
-     * 동작결과    EP-14 · 204 · 남의 후기는 403 FORBIDDEN
-     */
-        throw new UnsupportedOperationException("TODO 54");
-    }
+        /*
+         * TODO 54 · 후기 삭제
+         *
+         * 기능        작성자 본인인지 확인한 뒤 지움
+         *             모집자에게 삭제 권한을 주지 않음 · 낮은 평점을 지울 수 있게 됨
+         * 활용메소드  ReviewRepository.findById()   제공됨
+         *             Review.isWrittenBy()          엔티티 · 제공됨
+         *             ReviewRepository.delete()     제공됨
+         * 반환형태    없음
+         * 동작결과    EP-14 · 204 · 남의 후기는 403 FORBIDDEN
+         */
+        @Transactional
+        public void delete (Long reviewId, Long memberId){
+            Review review = reviewRepository.findById(reviewId)
+                    .orElseThrow(() -> new IllegalArgumentException("해당 후기를 찾을 수 없습니다. id=" + reviewId));
+
+            if (!review.isWrittenBy(memberId)) {
+                throw new IllegalArgumentException("작성자 본인만 삭제할 수 있습니다.");
+            }
+
+            reviewRepository.delete(review);
+        }
+
 
     private boolean isParticipant(StudyPost post, Long memberId) {
     /*
@@ -102,6 +123,14 @@ public class ReviewService {
      * 반환형태    boolean
      * 동작결과    모집자와 수락된 신청자만 후기 입력란이 보임
      */
-        throw new UnsupportedOperationException("TODO 55");
+        if (post.isWrittenBy(memberId)) {
+            return true;
+        }
+
+        return applicationRepository.existsByStudyPostIdAndApplicantIdAndStatusIn(
+                post.getId(),
+                memberId,
+                List.of(ApplicationStatus.ACCEPTED)
+        );
     }
 }

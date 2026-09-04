@@ -32,4 +32,5 @@ public class ReviewController {
      * 반환형태    List<ReviewResponse> · ReviewResponse
      * 동작결과    EP-12 · EP-13 · EP-14 · 목록은 토큰 없이 200
      */
+
 }
