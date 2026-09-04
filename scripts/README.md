@@ -29,5 +29,20 @@ chmod +x scripts/push.sh
 
 ## 더블클릭 실행
 
-- 맥: `push.command`
-- 윈도우: `push.bat` (Git Bash 필요)
+터미널 명령이 익숙하지 않으면 이 방법 사용.
+
+**맥**
+
+1. `study-app-team02` 폴더에서 `scripts` 폴더 진입
+2. `push.command` 더블클릭
+3. 최초 실행 시 "확인되지 않은 개발자" 경고가 뜨면 `push.command` 우클릭 → 열기 (한 번만 하면 됨)
+4. 터미널 창이 열리고 자동 실행됨
+
+**윈도우**
+
+1. Git for Windows(Git Bash 포함) 설치 필요. 강의 기준 세팅이면 이미 설치돼 있음
+2. `study-app-team02` 폴더에서 `scripts` 폴더 진입
+3. `push.bat` 더블클릭
+4. 명령 프롬프트 창이 열리고 자동 실행됨
+
+두 경우 다 `push.sh`가 물어보는 질문(계속 진행 여부, 커밋 메시지, push 여부)에 답하면서 진행하면 됨.
