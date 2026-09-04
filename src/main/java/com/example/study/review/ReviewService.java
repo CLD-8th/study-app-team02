@@ -60,16 +60,7 @@ public class ReviewService {
     public ReviewResponse create(Long studyPostId, String content, int rating, Long memberId) {
         /*
          * TODO 53 · 후기 등록
-         *
-         * 기능        대상 확인 → 마감 여부 → 참여 여부 → 중복 순서로 판단
-         * 활용메소드  StudyService.getWithWriter()      제공됨
-         *             StudyPost.isRecruiting()         엔티티 · 제공됨
-         *             ReviewService.isParticipant()    같은 클래스 · TODO 55
-         *             ReviewRepository 의 후기 규약       TODO 51 · 같은 담당
-         *             MemberService.getMember()        제공됨
-         * 반환형태    ReviewResponse
-         * 동작결과    EP-13 · 201 · 모집 중이면 400 STUDY_NOT_CLOSED
-         *             참여자가 아니면 403 · 두 번째는 400 DUPLICATE_REVIEW
+
          */
         StudyPost studyPost = studyService.getWithWriter(studyPostId);
 
