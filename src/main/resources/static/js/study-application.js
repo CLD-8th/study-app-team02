@@ -57,19 +57,12 @@ StudyPage.register(async function renderApplications() {
 });
 
 async function processApplication(applicationId, action) {
-    /*
-     * TODO 48 · 수락과 거절 처리
-     *
-     * 기능        수락과 거절은 주소의 끝만 다르므로 하나로 묶음
-     *             성공하면 다시 그려 인원과 상태를 갱신함
-     *             실패하면 사유를 안내에 표시함
-     * 활용메소드  api.patch()          api.js · 제공됨
-     *             StudyPage.reload()   제공됨 · 상세의 인원도 함께 바뀜
-     *             showError()          common.js · 제공됨
-     *             PATCH /api/applications/{id}/accept · reject   TODO 46 · 같은 담당
-     * 받는자료    ApplicationResponse · 실패는 ErrorResponse
-     * 그릴위치    SC-02 · #page-error
-     * 동작결과    마지막 자리를 수락하면 상세의 배지가 마감으로 바뀜
-     *             정원이 찬 뒤 수락하면 400 CAPACITY_EXCEEDED
-     */
+    const error = document.getElementById('page-error');
+    try {
+        await api.patch('/api/applications/' + applicationId + '/' + action);
+        // 인원과 모집글 상태(마감 여부)도 함께 바뀔 수 있어 네 구획을 다시 그림.
+        await StudyPage.reload();
+    } catch (e) {
+        showError(error, e);
+    }
 }
