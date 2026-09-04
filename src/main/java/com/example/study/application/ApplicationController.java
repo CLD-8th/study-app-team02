@@ -40,16 +40,27 @@ public class ApplicationController {
      * 동작결과    EP-07 · EP-08
      */
 
-    /*
-     * TODO 46 · 신청 처리 주소 셋
+    /**
+     * 신청 목록을 조회함. EP-09.
      *
-     * 기능        GET /api/studies/{studyId}/applications
-     *             PATCH /api/applications/{id}/accept
+     * @param studyId 모집글 식별자
+     * @param memberId 토큰에서 확인한 회원 식별자
+     * @return 신청 목록, 200
+     */
+    @GetMapping("/api/studies/{studyId}/applications")
+    public List<ApplicationResponse> findByStudy(@PathVariable Long studyId,
+                                                  @AuthenticationPrincipal Long memberId) {
+        return applicationService.findByStudy(studyId, memberId);
+    }
+
+    /*
+     * TODO 46 · 신청 처리 주소 나머지 둘
+     *
+     * 기능        PATCH /api/applications/{id}/accept
      *             PATCH /api/applications/{id}/reject 를 만듦
-     * 활용메소드  ApplicationService.findByStudy()   TODO 42 · 같은 담당
-     *             ApplicationService.accept()       TODO 43 · 같은 담당
+     * 활용메소드  ApplicationService.accept()       TODO 43 · 같은 담당
      *             ApplicationService.reject()       TODO 44 · 같은 담당
-     * 반환형태    List<ApplicationResponse> · ApplicationResponse
-     * 동작결과    EP-09 · EP-10 · EP-11
+     * 반환형태    ApplicationResponse
+     * 동작결과    EP-10 · EP-11
      */
 }
