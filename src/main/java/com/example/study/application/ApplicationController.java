@@ -28,54 +28,44 @@ public class ApplicationController {
 
     private final ApplicationService applicationService;
 
-    /*
-     * TODO 33 · 신청과 취소 주소
-     *
-     * 기능        POST /api/studies/{studyId}/applications 와
-     *             DELETE /api/applications/{id} 를 만듦
-     *             신청은 201 · 취소는 204
-     * 활용메소드  ApplicationService.apply()    TODO 31 · 같은 담당
-     *             ApplicationService.cancel()   TODO 32 · 같은 담당
-     * 반환형태    ApplicationResponse · 취소는 없음
-     * 동작결과    EP-07 · EP-08
-     */
+    @PostMapping("/api/studies/{studyId}/applications")
+    public ResponseEntity<ApplicationResponse> apply(
+            @PathVariable Long studyId,
+            @Valid @RequestBody ApplicationRequest request,
+            @AuthenticationPrincipal Long memberId
+    ) {
+        ApplicationResponse created = applicationService.apply(
+                studyId,
+                request.message(),
+                memberId
+        );
+        return ResponseEntity.status(201).body(created);
+    }
 
-    /**
-     * 신청 목록을 조회함. EP-09.
-     *
-     * @param studyId 모집글 식별자
-     * @param memberId 토큰에서 확인한 회원 식별자
-     * @return 신청 목록, 200
-     */
+    @DeleteMapping("/api/applications/{id}")
+    public ResponseEntity<Void> cancel(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Long memberId
+    ) {
+        applicationService.cancel(id, memberId);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/api/studies/{studyId}/applications")
     public List<ApplicationResponse> findByStudy(@PathVariable Long studyId,
-                                                  @AuthenticationPrincipal Long memberId) {
+                                                 @AuthenticationPrincipal Long memberId) {
         return applicationService.findByStudy(studyId, memberId);
     }
 
-    /**
-     * 신청을 수락함. EP-10.
-     *
-     * @param id 신청 식별자
-     * @param memberId 토큰에서 확인한 회원 식별자
-     * @return 수락된 신청, 200
-     */
     @PatchMapping("/api/applications/{id}/accept")
     public ApplicationResponse accept(@PathVariable Long id,
-                                       @AuthenticationPrincipal Long memberId) {
+                                      @AuthenticationPrincipal Long memberId) {
         return applicationService.accept(id, memberId);
     }
 
-    /**
-     * 신청을 거절함. EP-11.
-     *
-     * @param id 신청 식별자
-     * @param memberId 토큰에서 확인한 회원 식별자
-     * @return 거절된 신청, 200
-     */
     @PatchMapping("/api/applications/{id}/reject")
     public ApplicationResponse reject(@PathVariable Long id,
-                                       @AuthenticationPrincipal Long memberId) {
+                                      @AuthenticationPrincipal Long memberId) {
         return applicationService.reject(id, memberId);
     }
 }
