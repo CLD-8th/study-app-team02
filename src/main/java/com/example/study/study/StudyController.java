@@ -51,20 +51,58 @@ public class StudyController {
      * 동작결과    EP-01 · GET /api/studies?page=0&size=10 이 쪽 형태로 응답
      */
 
-    /*
-     * TODO 26 · 모집글 주소 다섯
+    /**
+     * 상세 조회.
      *
-     * 기능        상세 · 등록 · 수정 · 삭제 · 마감 주소를 만듦
-     *             작성자를 본문으로 받지 않고 @AuthenticationPrincipal 로 받음
-     *             등록은 201 과 Location 머리 · 삭제는 204
-     * 활용메소드  StudyService.findById()   TODO 22 · 같은 담당
-     *             StudyService.create()     TODO 21 · 같은 담당
-     *             StudyService.update()     TODO 23 · 같은 담당
-     *             StudyService.delete()     TODO 24 · 같은 담당
-     *             StudyService.close()      TODO 25 · 같은 담당
-     *             ResponseEntity.created()  Location 머리를 붙임
-     *             URI.create()              주소 문자열을 만듦
-     * 반환형태    StudyDetailResponse · 삭제만 없음
-     * 동작결과    EP-02 ~ EP-06 · 마감은 PATCH /api/studies/{id}/close
+     * 손님도 볼 수 있어 인증을 요구하지 않음.
      */
+    @GetMapping("/{id}")
+    public StudyDetailResponse findOne(@PathVariable Long id) {
+        return studyService.findById(id);
+    }
+
+    /**
+     * 등록.
+     *
+     * 모집자를 본문으로 받지 않고 토큰에서 확인함. 받으면 위조가 가능함.
+     */
+    @PostMapping
+    public ResponseEntity<StudyDetailResponse> create(@Valid @RequestBody StudyRequest request,
+                                                      @AuthenticationPrincipal Long memberId) {
+        StudyDetailResponse created = studyService.create(
+                request.title(), request.content(), request.capacity(), request.deadline(), memberId);
+
+        return ResponseEntity.created(URI.create("/api/studies/" + created.id())).body(created);
+    }
+
+    @PutMapping("/{id}")
+    public StudyDetailResponse update(@PathVariable Long id,
+                                      @Valid @RequestBody StudyRequest request,
+                                      @AuthenticationPrincipal Long memberId) {
+        return studyService.update(
+                id, request.title(), request.content(), request.capacity(), request.deadline(), memberId);
+    }
+
+    /**
+     * 삭제.
+     *
+     * 돌려줄 내용이 없으므로 204 로 응답함.
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id,
+                                       @AuthenticationPrincipal Long memberId) {
+        studyService.delete(id, memberId);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * 마감.
+     *
+     * 본문이 없음. 주소만으로 무엇을 할지 결정함.
+     */
+    @PatchMapping("/{id}/close")
+    public StudyDetailResponse close(@PathVariable Long id,
+                                     @AuthenticationPrincipal Long memberId) {
+        return studyService.close(id, memberId);
+    }
 }
