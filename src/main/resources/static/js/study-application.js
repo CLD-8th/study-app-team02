@@ -5,22 +5,55 @@
  */
 
 StudyPage.register(async function renderApplications() {
-    /*
-     * TODO 47 · 신청 목록 표시
-     *
-     * 기능        모집자가 아니면 구획을 숨김
-     *             신청자 별명 · 상태 · 메시지를 그림
-     *             대기 상태에만 수락과 거절 단추를 둠
-     *             정원이 찼으면 더 수락할 수 없다는 안내를 아래에 둠
-     * 활용메소드  StudyPage.isOwner() · StudyPage.study   제공됨
-     *             api.get()                              api.js · 제공됨
-     *             badge() · shortDate() · escapeHtml()   common.js · 제공됨
-     *             GET /api/studies/{id}/applications     TODO 46 · 같은 담당
-     * 받는자료    List<ApplicationResponse> · TODO.md 응답 형태 참고
-     * 그릴위치    SC-02 · #application-panel
-     *             조각은 parts.html 의 "신청 목록"
-     * 동작결과    남의 글에서는 구획이 보이지 않음 · 신청이 없으면 빈 화면 문구
-     */
+    if (!StudyPage.isOwner()) return;
+
+    const box = document.getElementById('application-panel');
+    const applications = await api.get('/api/studies/' + StudyPage.id + '/applications');
+
+    if (applications.length === 0) {
+        box.innerHTML =
+            '<div class="card-head"><div class="card-title">신청 목록</div></div>' +
+            '<div class="item-meta">아직 신청이 없습니다</div>';
+        box.classList.remove('hidden');
+        return;
+    }
+
+    const full = StudyPage.study.acceptedCount >= StudyPage.study.capacity;
+
+    const items = applications.map(function (a) {
+        const meta = '<div class="item-meta"><span>' + escapeHtml(a.message || '') + '</span></div>';
+        const title = '<div class="item-title">' + escapeHtml(a.applicantNickname) + ' ' + badge(a.status) + '</div>';
+
+        if (a.status === 'PENDING') {
+            const actions =
+                '<div class="actions">' +
+                '<button class="primary" data-id="' + a.id + '" data-action="accept">수락</button>' +
+                '<button data-id="' + a.id + '" data-action="reject">거절</button>' +
+                '</div>';
+            return '<div class="item"><div>' + title + meta + '</div>' + actions + '</div>';
+        }
+
+        return (
+            '<div class="item"><div>' + title + meta + '</div>' +
+            '<span class="item-meta">' + shortDate(a.createdAt) + '</span></div>'
+        );
+    }).join('');
+
+    box.innerHTML =
+        '<div class="card-head">' +
+        '<div class="card-title">신청 목록</div>' +
+        '<span class="card-count">' + applications.length + '건</span>' +
+        '</div>' +
+        items +
+        (full ? '<div class="alert alert-error">정원이 찼습니다. 더 수락할 수 없습니다</div>' : '');
+
+    box.classList.remove('hidden');
+
+    box.querySelectorAll('button[data-action]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            processApplication(button.dataset.id, button.dataset.action);
+        });
+    });
 });
 
 async function processApplication(applicationId, action) {
@@ -35,8 +68,7 @@ async function processApplication(applicationId, action) {
      *             showError()          common.js · 제공됨
      *             PATCH /api/applications/{id}/accept · reject   TODO 46 · 같은 담당
      * 받는자료    ApplicationResponse · 실패는 ErrorResponse
-     * 그릴위치    SC-02 · #process-error
-     *             조각은 parts.html 의 "실패 안내 · 문구만"
+     * 그릴위치    SC-02 · #page-error
      * 동작결과    마지막 자리를 수락하면 상세의 배지가 마감으로 바뀜
      *             정원이 찬 뒤 수락하면 400 CAPACITY_EXCEEDED
      */
