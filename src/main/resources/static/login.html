@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 · 스터디 모집</title>
+    <link rel="icon" href="/img/logo.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="header">
+    <div class="header-inner">
+        <a class="logo" href="/index.html">
+            <img src="/img/logo.svg" alt="">
+            <span>스터디 모집</span>
+        </a>
+        <div class="header-menu" id="header-menu"></div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="card narrow">
+        <h1 class="page-title">로그인</h1>
+
+        <div class="field">
+            <div class="field-head"><label for="email">이메일</label></div>
+            <input type="email" id="email" placeholder="test@example.com">
+            <div class="field-error hidden" id="email-error"></div>
+        </div>
+
+        <div class="field">
+            <div class="field-head"><label for="password">비밀번호</label></div>
+            <input type="password" id="password" placeholder="••••••••">
+            <div class="field-error hidden" id="password-error"></div>
+        </div>
+
+        <div class="field-error hidden" id="login-error"></div>
+
+        <div class="field">
+            <button class="primary" id="login" style="width: 100%;">로그인</button>
+        </div>
+
+        <div style="text-align: center; font-size: 12px; color: #8b949e;">
+            계정이 없으신가요? <a href="/signup.html">가입하기</a>
+        </div>
+    </div>
+</div>
+<div class="footer">&copy; SuperbDevops 2026 스터디 게시판</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/common.js"></script>
+<script src="/js/auth-page.js"></script>
+</body>
+</html>

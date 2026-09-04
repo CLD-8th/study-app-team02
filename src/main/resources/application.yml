@@ -1,0 +1,31 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: study-app
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/study_app?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: study
+    password: Study!1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      # 개발에서는 표를 자동으로 맞춤. 운영에서는 validate 로 둠.
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+study:
+  jwt:
+    secret: study-app-local-secret-key-for-jwt-signing-2026
+    access-expire-minutes: 30
+    refresh-expire-days: 7
+
+logging:
+  level:
+    com.example.study: debug

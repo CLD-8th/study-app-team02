@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>모집글 상세 · 스터디 모집</title>
+    <link rel="icon" href="/img/logo.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="header">
+    <div class="header-inner">
+        <a class="logo" href="/index.html">
+            <img src="/img/logo.svg" alt="">
+            <span>스터디 모집</span>
+        </a>
+        <div class="header-menu" id="header-menu"></div>
+    </div>
+</div>
+
+<div class="container">
+    <div style="margin-bottom: 12px;"><a href="/index.html">← 목록</a></div>
+
+    <div class="alert alert-error hidden" id="page-error"></div>
+
+    <!-- 담당 2 · 모집글 상세 -->
+    <div class="card hidden" id="study-detail"></div>
+
+    <!-- 담당 3 · 신청 -->
+    <div class="card hidden" id="apply-panel"></div>
+
+    <!-- 담당 4 · 신청 목록 -->
+    <div class="card hidden" id="application-panel"></div>
+
+    <!-- 담당 5 · 후기 -->
+    <div class="card hidden" id="review-panel"></div>
+</div>
+<div class="footer">&copy; SuperbDevops 2026 스터디 게시판</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/common.js"></script>
+<script src="/js/study-page.js"></script>
+<script src="/js/study-detail.js"></script>  <!-- 담당 2 · 상세 -->
+<script src="/js/study-apply.js"></script>  <!-- 담당 3 · 신청 -->
+<script src="/js/study-application.js"></script>  <!-- 담당 4 · 신청 목록 -->
+<script src="/js/study-review.js"></script>  <!-- 담당 5 · 후기 -->
+</body>
+</html>

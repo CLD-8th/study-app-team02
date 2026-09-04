@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마이페이지 · 스터디 모집</title>
+    <link rel="icon" href="/img/logo.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="header">
+    <div class="header-inner">
+        <a class="logo" href="/index.html">
+            <img src="/img/logo.svg" alt="">
+            <span>스터디 모집</span>
+        </a>
+        <div class="header-menu" id="header-menu"></div>
+    </div>
+</div>
+
+<div class="container">
+    <h1 class="page-title">마이페이지</h1>
+
+    <div class="card">
+        <div class="card-head"><div class="card-title">내 정보</div></div>
+        <div id="profile" class="item-meta" style="flex-direction: column; gap: 6px;"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-head">
+            <div class="card-title">내가 쓴 모집글</div>
+            <span class="card-count" id="study-count">0건</span>
+        </div>
+        <div id="my-studies"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-head">
+            <div class="card-title">내 신청</div>
+            <span class="card-count" id="application-count">0건</span>
+        </div>
+        <div id="my-applications"></div>
+    </div>
+</div>
+<div class="footer">&copy; SuperbDevops 2026 스터디 게시판</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/common.js"></script>
+<script src="/js/mypage.js"></script>  <!-- 담당 6 · 마이페이지 -->
+</body>
+</html>

@@ -1,0 +1,20 @@
+# 테스트 전용 설정.
+#
+# 본 설정을 그대로 쓰면 테스트가 개발용 데이터베이스에 접근함.
+spring:
+  datasource:
+    url: jdbc:h2:mem:studytest
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+
+study:
+  jwt:
+    secret: study-app-test-secret-key-for-jwt-signing-2026
+    access-expire-minutes: 30
+    refresh-expire-days: 7

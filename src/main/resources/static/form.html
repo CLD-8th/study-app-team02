@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>모집글 등록 · 스터디 모집</title>
+    <link rel="icon" href="/img/logo.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="header">
+    <div class="header-inner">
+        <a class="logo" href="/index.html">
+            <img src="/img/logo.svg" alt="">
+            <span>스터디 모집</span>
+        </a>
+        <div class="header-menu" id="header-menu"></div>
+    </div>
+</div>
+
+<div class="container">
+    <h1 class="page-title" id="page-title">모집글 등록</h1>
+
+    <div class="card">
+        <div class="field">
+            <div class="field-head"><label for="title">제목</label><span class="hint">200자 이하</span></div>
+            <input type="text" id="title" placeholder="제목을 입력하세요">
+            <div class="field-error hidden" id="title-error"></div>
+        </div>
+
+        <div class="field">
+            <div class="field-head"><label for="content">소개</label></div>
+            <textarea id="content" placeholder="스터디 소개를 입력하세요"></textarea>
+            <div class="field-error hidden" id="content-error"></div>
+        </div>
+
+        <div style="display: flex; gap: 16px;">
+            <div class="field" style="flex: 1;">
+                <div class="field-head"><label for="capacity">정원</label><span class="hint">1 이상</span></div>
+                <input type="number" id="capacity" value="4" min="1">
+                <div class="field-error hidden" id="capacity-error"></div>
+            </div>
+            <div class="field" style="flex: 1;">
+                <div class="field-head"><label for="deadline">마감일</label><span class="hint">오늘 이후</span></div>
+                <input type="date" id="deadline">
+                <div class="field-error hidden" id="deadline-error"></div>
+            </div>
+        </div>
+
+        <div class="alert alert-error hidden" id="save-error"></div>
+
+        <div class="actions">
+            <button id="cancel">취소</button>
+            <button class="primary" id="save">저장</button>
+        </div>
+    </div>
+</div>
+<div class="footer">&copy; SuperbDevops 2026 스터디 게시판</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/common.js"></script>
+<script src="/js/form.js"></script>  <!-- 담당 1 · 등록 수정 -->
+</body>
+</html>

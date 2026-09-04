@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원 가입 · 스터디 모집</title>
+    <link rel="icon" href="/img/logo.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="header">
+    <div class="header-inner">
+        <a class="logo" href="/index.html">
+            <img src="/img/logo.svg" alt="">
+            <span>스터디 모집</span>
+        </a>
+        <div class="header-menu" id="header-menu"></div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="card narrow">
+        <h1 class="page-title">회원 가입</h1>
+
+        <div class="field">
+            <div class="field-head"><label for="email">이메일</label></div>
+            <input type="email" id="email" placeholder="test@example.com">
+            <div class="field-error hidden" id="email-error"></div>
+        </div>
+
+        <div class="field">
+            <div class="field-head"><label for="password">비밀번호</label><span class="hint">4자 이상</span></div>
+            <input type="password" id="password" placeholder="••••••••">
+            <div class="field-error hidden" id="password-error"></div>
+        </div>
+
+        <div class="field">
+            <div class="field-head"><label for="confirm">비밀번호 확인</label></div>
+            <input type="password" id="confirm" placeholder="••••••••">
+            <div class="field-error hidden" id="confirm-error"></div>
+        </div>
+
+        <div class="field">
+            <div class="field-head"><label for="nickname">별명</label><span class="hint">20자 이하</span></div>
+            <input type="text" id="nickname" placeholder="홍길동">
+            <div class="field-error hidden" id="nickname-error"></div>
+        </div>
+
+        <div class="alert alert-error hidden" id="signup-error"></div>
+
+        <div class="field">
+            <button class="primary" id="signup" style="width: 100%;">가입하기</button>
+        </div>
+
+        <div style="text-align: center; font-size: 12px; color: #8b949e;">
+            이미 계정이 있으신가요? <a href="/login.html">로그인</a>
+        </div>
+    </div>
+</div>
+<div class="footer">&copy; SuperbDevops 2026 스터디 게시판</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/common.js"></script>
+<script src="/js/auth-page.js"></script>
+</body>
+</html>

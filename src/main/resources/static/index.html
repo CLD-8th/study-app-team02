@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>모집글 목록 · 스터디 모집</title>
+    <link rel="icon" href="/img/logo.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="header">
+    <div class="header-inner">
+        <a class="logo" href="/index.html">
+            <img src="/img/logo.svg" alt="">
+            <span>스터디 모집</span>
+        </a>
+        <div class="header-menu" id="header-menu"></div>
+    </div>
+</div>
+
+<div class="container">
+    <h1 class="page-title">모집글 목록</h1>
+
+    <div class="search-bar">
+        <input type="text" id="keyword" placeholder="검색어">
+        <select id="status">
+            <option value="">전체</option>
+            <option value="RECRUITING">모집 중</option>
+            <option value="CLOSED">마감</option>
+        </select>
+        <button id="search">검색</button>
+        <button class="primary hidden" id="create">등록</button>
+    </div>
+
+    <div class="alert alert-error hidden" id="load-error">
+        <span>목록을 불러오지 못했습니다</span>
+        <button id="retry">다시 시도</button>
+    </div>
+
+    <div class="list-head">
+        <span id="total">0건</span>
+        <span>최신순</span>
+    </div>
+
+    <div id="list"></div>
+    <div class="pager" id="pager"></div>
+</div>
+<div class="footer">&copy; SuperbDevops 2026 스터디 게시판</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/common.js"></script>
+<script src="/js/list.js"></script>  <!-- 담당 1 · 목록 -->
+</body>
+</html>

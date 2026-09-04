@@ -1,0 +1,184 @@
+/* 스터디 모집 · 공통 모양
+ *
+ * 화면 설계서의 기준선에 맞춤. 본문 최대 1080px, 좌우 여백 20px.
+ */
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    background: #eef1f5;
+    color: #1f2328;
+
+    /* 내용이 짧아도 꼬리 영역이 화면 아래에 붙도록 함. */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+a { color: #4f6ef0; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── 머리 영역 */
+.header {
+    background: #fff;
+    border-bottom: 1px solid #e3e8ee;
+}
+.header-inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 20px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* 로고는 그림과 글자를 한 줄로 둠. */
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 24px;
+    color: #1f2328;
+}
+.logo:hover { text-decoration: none; }
+.logo img { width: 36px; height: 36px; display: block; }
+
+.header-menu { display: flex; gap: 18px; align-items: center; font-size: 16px; }
+.header-menu .nickname { font-weight: 700; }
+
+/* ── 본문 */
+.container { max-width: 1080px; width: 100%; margin: 0 auto; padding: 24px 20px 60px; box-sizing: border-box; flex: 1; }
+.page-title { font-size: 22px; font-weight: 700; margin: 0 0 18px; }
+.card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 16px;
+}
+.card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+.card-title { font-size: 15px; font-weight: 700; }
+.card-count { font-size: 12px; color: #8b949e; }
+
+/* ── 입력 */
+.field { margin-bottom: 14px; }
+.field-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+}
+label { font-size: 12px; font-weight: 700; }
+.hint { font-size: 11px; color: #8b949e; }
+input, textarea, select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d7dee7;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: inherit;
+    background: #fff;
+}
+textarea { min-height: 120px; resize: vertical; }
+input.invalid, textarea.invalid { border-color: #d97b72; background: #fdf5f4; }
+.field-error { font-size: 11px; color: #c0433c; margin-top: 4px; }
+
+/* ── 단추 */
+button {
+    padding: 9px 16px;
+    border-radius: 8px;
+    border: 1px solid #d7dee7;
+    background: #fff;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+}
+button:hover { background: #f6f8fa; }
+button.primary { background: #4f6ef0; border-color: #4f6ef0; color: #fff; }
+button.primary:hover { background: #4460e6; }
+button.danger { border-color: #e5b5b1; color: #c0433c; }
+.actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* ── 목록 */
+.search-bar { display: flex; gap: 8px; margin-bottom: 12px; }
+.search-bar input { flex: 1; }
+.search-bar select { width: 130px; }
+.list-head {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #8b949e;
+    margin-bottom: 8px;
+}
+.item {
+    background: #fff;
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.item.closed { opacity: 0.55; }
+.item-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.item-meta { font-size: 12px; color: #8b949e; display: flex; gap: 12px; }
+
+/* ── 상태 배지 */
+.badge {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+}
+.badge-RECRUITING { background: #eef2ff; color: #2f3f9e; }
+.badge-CLOSED { background: #eef0f3; color: #8b949e; }
+.badge-PENDING { background: #fff8ec; color: #8a6116; }
+.badge-ACCEPTED { background: #effaf3; color: #1e6b3f; }
+.badge-REJECTED { background: #fdf1f0; color: #a4443f; }
+
+/* ── 빈 화면과 안내 */
+.empty {
+    padding: 40px 0;
+    text-align: center;
+    color: #8b949e;
+    font-size: 13px;
+    background: #fafbfc;
+    border-radius: 8px;
+}
+.alert {
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.alert-error { background: #fdf1f0; color: #a4443f; }
+.hidden { display: none; }
+
+/* ── 쪽 이동 */
+.pager { display: flex; gap: 6px; justify-content: center; margin-top: 18px; }
+.pager button { min-width: 34px; padding: 7px 0; }
+.pager button.current { background: #4f6ef0; border-color: #4f6ef0; color: #fff; }
+
+/* ── 좁은 화면 */
+.narrow { max-width: 420px; margin: 60px auto; }
+
+/* ── 꼬리 영역 */
+.footer {
+    background: #fff;
+    border-top: 1px solid #e3e8ee;
+    padding: 18px 20px;
+    text-align: center;
+    font-size: 12px;
+    color: #8b949e;
+}
