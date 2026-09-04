@@ -29,5 +29,7 @@ jobs:
           distribution: temurin
           java-version: '21'
 
+      - uses: gradle/actions/setup-gradle@v4
+
       - name: 컴파일 확인
-        run: ./gradlew compileJava --no-daemon
+        run: gradle compileJava --no-daemon
