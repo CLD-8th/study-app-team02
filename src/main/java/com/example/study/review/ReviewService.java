@@ -11,6 +11,7 @@ import com.example.study.study.StudyPost;
 import com.example.study.study.StudyService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.ProtocolHandler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,15 +65,15 @@ public class ReviewService {
         StudyPost studyPost = studyService.getWithWriter(studyPostId);
 
         if (studyPost.isRecruiting()) {
-            throw new BusinessException(ErrorCode.STUDY_NOT_CLOSED, "모집 중인 스터디에는 후기를 남길 수 없습니다.");
+            throw new IllegalArgumentException("모집 중인 스터디에는 후기를 남길 수 없습니다.");
         }
 
         if (!isParticipant(studyPost, memberId)) {
-            throw new BusinessException(ErrorCode.FORBIDDEN, "스터디 참여자만 후기를 남길 수 있습니다.");
+            throw new IllegalArgumentException("스터디 참여자만 후기를 남길 수 있습니다.");
         }
 
         if (reviewRepository.existsByWriterIdAndStudyPostId(memberId, studyPostId)) {
-            throw new BusinessException(ErrorCode.DUPLICATE_REVIEW, "이미 후기를 작성했습니다.");
+            throw new IllegalArgumentException("이미 후기를 작성했습니다.");
         }
 
         Member writer = memberService.getMember(memberId);
@@ -101,10 +102,10 @@ public class ReviewService {
         @Transactional
         public void delete (Long reviewId, Long memberId){
             Review review = reviewRepository.findById(reviewId)
-                    .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "해당 후기를 찾을 수 없습니다. id=" + reviewId));
+                    .orElseThrow(() -> new IllegalArgumentException("해당 후기를 찾을 수 없습니다. id=" + reviewId));
 
             if (!review.isWrittenBy(memberId)) {
-                throw new BusinessException(ErrorCode.FORBIDDEN, "작성자 본인만 삭제할 수 있습니다.");
+                throw new IllegalArgumentException("작성자 본인만 삭제할 수 있습니다.");
             }
 
             reviewRepository.delete(review);

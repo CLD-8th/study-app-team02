@@ -6,75 +6,108 @@
  */
 
 StudyPage.register(async function renderReviews() {
-    const box = document.getElementById('review-panel');
-    const error = document.getElementById('page-error');
-    const reviews = await api.get('/api/studies/' + StudyPage.id + '/reviews');
+    /*
+     * TODO 57 · 후기 목록과 입력란
+     */
+    StudyPage.register(async function renderReviews() {
+        const $panel = document.querySelector('#review-panel');
+        if (!$panel) return;
 
-    const myId = auth.memberId;
-    const alreadyWritten = reviews.some(function (r) { return r.writerId === myId; });
+        try {
+            // 1. 후기 데이터 조회
+            const reviews = await api.get(`/api/studies/${StudyPage.studyId}/reviews`);
 
-    const application = StudyPage.myApplication;
-    const participant = StudyPage.isOwner() || (application && application.status === 'ACCEPTED');
-    const closed = StudyPage.study.status !== 'RECRUITING';
-    const canWrite = auth.loggedIn && closed && participant && !alreadyWritten;
+            const memberId = auth.memberId;
+            const myApp = StudyPage.myApplication;
 
-    const items = reviews.map(function (r) {
-        const stars = '★★★★★'.slice(0, r.rating);
-        const mine = r.writerId === myId;
-        return (
-            '<div class="item">' +
-            '<div><div class="item-title">' + escapeHtml(r.writerNickname) +
-            ' <span style="color:#4f6ef0;">' + stars + '</span></div>' +
-            '<div class="item-meta"><span>' + escapeHtml(r.content) + '</span></div></div>' +
-            '<div class="item-meta"><span>' + dateTime(r.createdAt) + '</span>' +
-            (mine ? '<button class="danger" data-id="' + r.id + '">삭제</button>' : '') +
-            '</div></div>'
-        );
-    }).join('');
+            // 조건 판단 (참여자 여부 & 작성 여부)
+            const isParticipant = StudyPage.isOwner() || myApp?.status === 'ACCEPTED';
+            const hasWritten = memberId && reviews.some(r => r.writerId === memberId);
 
-    const form = canWrite
-        ? '<div class="card" style="background:#fafbfc; margin-bottom:14px;">' +
-          '<div class="field" style="display:flex; gap:10px; align-items:center;">' +
-          '<label>평점</label>' +
-          '<select id="review-rating" style="width:90px;">' +
-          '<option>5</option><option>4</option><option>3</option><option>2</option><option>1</option>' +
-          '</select></div>' +
-          '<div class="field">' +
-          '<textarea id="review-content" placeholder="후기를 남겨 주세요"></textarea>' +
-          '<div class="field-error hidden" id="review-content-error"></div>' +
-          '</div>' +
-          '<div class="actions"><button class="primary" id="review-submit">등록</button></div>' +
-          '</div>'
-        : '';
+            // 입력란 표시 조건: 로그인 + 마감됨 + 참여자 + 미작성
+            const canWrite = memberId && !StudyPage.study.isRecruiting && isParticipant && !hasWritten;
 
-    box.innerHTML = '<div class="card-head"><div class="card-title">후기</div></div>' + form + items;
-    box.classList.remove('hidden');
+            // 2. 입력란 HTML
+            let html = canWrite ? `
+            <div class="review-form">
+                <textarea id="review-content"></textarea>
+                <button id="btn-submit">등록</button>
+            </div>
+        ` : '';
 
-    if (canWrite) {
-        document.getElementById('review-submit').addEventListener('click', async function () {
-            const content = document.getElementById('review-content').value;
-            const rating = Number(document.getElementById('review-rating').value);
-            try {
-                await api.post('/api/studies/' + StudyPage.id + '/reviews', { content: content, rating: rating });
-                // 후기가 생겼으므로 다시 그려 입력란을 없애고 목록에 반영함.
-                await StudyPage.reload();
-            } catch (e) {
-                if (!showFieldErrors(e, 'review-')) {
-                    showError(error, e);
-                }
+            // 3. 후기 목록 HTML
+            if (reviews?.length) {
+                html += '<ul class="review-list">';
+                reviews.forEach(r => {
+                    const isMyReview = memberId && r.writerId === memberId;
+                    html += `
+                    <li>
+                        <span>${escapeHtml(r.writerName)}</span>
+                        <span>${dateTime(r.createdAt)}</span>
+                        <p>${escapeHtml(r.content)}</p>
+                        ${isMyReview ? '<button class="btn-delete">삭제</button>' : ''}
+                    </li>
+                `;
+                });
+                html += '</ul>';
             }
-        });
+
+            $panel.innerHTML = html;
+        } catch (err) {
+            console.error(err);
+        }
+    });
+
+    /*
+     */
+    // TODO 58 · 후기 등록과 삭제
+
+// 1. 후기 등록 (이벤트 리스너 또는 등록 함수)
+    async function submitReview(studyPostId, rating, content) {
+        try {
+            // 평점과 내용을 보내고 요청
+            await api.post(`/api/studies/${studyPostId}/reviews`, {
+                rating: rating,
+                content: content
+            });
+
+            // 성공하면 화면 다시 그림
+            StudyPage.reload();
+        } catch (error) {
+            // 실패 시 ErrorResponse 처리
+            if (error.response && error.response.data) {
+                const errData = error.response.data;
+
+                // 항목별 사유(fieldErrors)가 오면 입력란 아래에 표시
+                if (errData.fieldErrors) {
+                    showFieldErrors(errData.fieldErrors);
+                } else {
+                    showError('#review-error', errData.message || '후기 등록 실패');
+                }
+            } else {
+                showError('#review-error', '오류가 발생했습니다.');
+            }
+        }
     }
 
-    box.querySelectorAll('button[data-id]').forEach(function (button) {
-        button.addEventListener('click', async function () {
-            if (!confirm('후기를 삭제할까요?')) return;
-            try {
-                await api.del('/api/reviews/' + button.dataset.id);
-                await StudyPage.reload();
-            } catch (e) {
-                showError(error, e);
+// 2. 후기 삭제 (이벤트 리스너 또는 삭제 함수)
+    async function deleteReview(studyPostId, reviewId) {
+        // 삭제는 확인을 받은 뒤 요청함
+        if (!confirm('후기를 삭제하시겠습니까?')) {
+            return;
+        }
+
+        try {
+            await api.del(`/api/studies/${studyPostId}/reviews/${reviewId}`);
+
+            // 성공하면 화면 다시 그림
+            StudyPage.reload();
+        } catch (error) {
+            if (error.response && error.response.data) {
+                showError('#review-error', error.response.data.message || '후기 삭제 실패');
+            } else {
+                showError('#review-error', '삭제 처리 중 오류가 발생했습니다.');
             }
-        });
-    });
+        }
+    }
 });

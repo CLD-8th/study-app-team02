@@ -38,22 +38,22 @@ public class ReviewController {
     @PostMapping("/api/studies/{studyId}/reviews")
     public ResponseEntity<ReviewResponse> create(
             @PathVariable Long studyId,
-            @Valid @RequestBody ReviewRequest request,
-            @AuthenticationPrincipal Long memberId) {
+            @RequestBody ReviewSaveRequest request,
+            @AuthenticationPrincipal AuthMember authMember) {
         ReviewResponse response = reviewService.create(
                 studyId,
                 request.content(),
                 request.rating(),
-                memberId
+                authMember.getId()
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
     // 후기 삭제 (DELETE 204)
-    @DeleteMapping("/api/reviews/{id}")
+    @DeleteMapping("/api/studies/{studyId}/reviews/{reviewId}")
     public ResponseEntity<Void> delete(
-            @PathVariable Long id,
-            @AuthenticationPrincipal Long memberId) {
-        reviewService.delete(id, memberId);
+            @PathVariable Long reviewId,
+            @AuthenticationPrincipal AuthMember authMember) {
+        reviewService.delete(reviewId, authMember.getId());
         return ResponseEntity.noContent().build();
     }
 }
