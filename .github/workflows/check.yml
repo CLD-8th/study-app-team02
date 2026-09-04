@@ -12,6 +12,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: 커밋 메시지 확인
+        run: |
+          MSGS=$(git log --format=%B origin/${{ github.base_ref }}..HEAD)
+          echo "$MSGS" | grep -iE 'claude|anthropic|co-authored-by' > /dev/null && exit 1 || exit 0
+
       - name: 안 고칠 파일 확인
         run: |
           CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
