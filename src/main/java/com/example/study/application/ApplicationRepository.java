@@ -15,14 +15,16 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
      *
      * 신청자를 함께 가져와 목록 건수만큼 조회가 늘어나지 않게 함.
      */
-    /*
-     * TODO 41 · 신청 목록 규약
+    /**
+     * 신청 목록을 오래된 순으로 조회함.
      *
-     * 기능        모집글 식별자로 조회하며 오래된 순 · 신청자를 함께 가져옴
-     * 활용메소드  없음 · 이름 규약으로 직접 선언
-     * 반환형태    List<Application>
-     * 동작결과    신청 목록에서 신청자 별명이 조회 하나로 나옴
+     * 신청자를 함께 가져와 목록 건수만큼 조회가 늘어나지 않게 함.
+     *
+     * @param studyPostId 모집글 식별자
+     * @return 신청 목록
      */
+    @EntityGraph(attributePaths = {"applicant"})
+    List<Application> findByStudyPostIdOrderByCreatedAtAsc(Long studyPostId);
 
     /**
      * 내 신청 목록.
