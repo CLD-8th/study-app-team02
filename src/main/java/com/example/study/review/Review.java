@@ -51,7 +51,7 @@ public class Review {
     // ── 예비 열
     private LocalDateTime updatedAt;
 
-    public Review(String content, int rating, StudyPost studyPost, Member writer) {
+    public Review(StudyPost content, Member rating, String studyPost, int writer) {
         this.content = content;
         this.rating = rating;
         this.studyPost = studyPost;
