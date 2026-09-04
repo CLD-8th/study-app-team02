@@ -2,10 +2,6 @@
 
 스터디 모집 게시판 스켈레톤. TODO 45개를 채워 완성함.
 
-## 진행 상황
-
-담당별 완료 현황: [docs/status.md](docs/status.md)
-
 ## 구성
 
 | 항목 | 값 |
@@ -26,7 +22,6 @@
 | `docs/api.md` | 주소 · 요청 · 응답 · 실패 코드 |
 | `docs/functions.md` | 기능별 판단 순서 · 상태 전이 · 권한 |
 | `docs/testing.md` | curl 로 직접 확인하는 법 |
-| `docs/status.md` | 담당별 완료 현황 |
 
 **주석의 `동작결과` 줄은 `docs/api.md`, `기능` 줄은 `docs/functions.md` 에서 찾음.**
 
