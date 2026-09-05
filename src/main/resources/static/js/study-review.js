@@ -124,15 +124,13 @@ deleteBtns.forEach(deleteBtn => {
 
                 showError(
                     '#review-error',
-                    errData.message || '후기 삭제 실패'
-                );
+                    errData.message || '후기 삭제 실패');
             } else {
                 showError(
                     '#review-error',
-                    '삭제 처리 중 오류가 발생했습니다.'
-                );
-            }
-         }
-     });
-    }
+                    '삭제 처리 중 오류가 발생했습니다.');
+                 }
+             }
+         });
+    });
 });
