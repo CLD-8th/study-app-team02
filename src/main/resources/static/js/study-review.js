@@ -9,7 +9,6 @@ StudyPage.register(async function renderReviews() {
     /*
      * TODO 57 · 후기 목록과 입력란
      */
-    StudyPage.register(async function renderReviews() {
         const $panel = document.querySelector('#review-panel');
         if (!$panel) return;
 
@@ -32,6 +31,7 @@ StudyPage.register(async function renderReviews() {
             <div class="review-form">
                 <textarea id="review-content"></textarea>
                 <button id="btn-submit">등록</button>
+                <div id="review-error"></div>
             </div>
         ` : '';
 
@@ -45,7 +45,7 @@ StudyPage.register(async function renderReviews() {
                         <span>${escapeHtml(r.writerName)}</span>
                         <span>${dateTime(r.createdAt)}</span>
                         <p>${escapeHtml(r.content)}</p>
-                        ${isMyReview ? '<button class="btn-delete">삭제</button>' : ''}
+                        ${isMyReview ? `<button class="btn-delete" data-review-id="${r.id}">삭제</button>` : ''}
                     </li>
                 `;
                 });
@@ -56,58 +56,83 @@ StudyPage.register(async function renderReviews() {
         } catch (err) {
             console.error(err);
         }
-    });
+
 
     /*
      */
     // TODO 58 · 후기 등록과 삭제
 
-// 1. 후기 등록 (이벤트 리스너 또는 등록 함수)
-    async function submitReview(studyPostId, rating, content) {
+// 1. 후기 등록 함수
+const writeBtn = document.querySelector('#btn-submit');
+
+if (writeBtn) {
+    writeBtn.addEventListener('click', async () => {
+        const content = document.querySelector('#review-content')?.value;
+
         try {
-            // 평점과 내용을 보내고 요청
-            await api.post(`/api/studies/${studyPostId}/reviews`, {
-                rating: rating,
+            await api.post(`/api/studies/${StudyPage.studyId}/reviews`, {
                 content: content
             });
 
-            // 성공하면 화면 다시 그림
             StudyPage.reload();
+
         } catch (error) {
-            // 실패 시 ErrorResponse 처리
             if (error.response && error.response.data) {
                 const errData = error.response.data;
 
-                // 항목별 사유(fieldErrors)가 오면 입력란 아래에 표시
                 if (errData.fieldErrors) {
                     showFieldErrors(errData.fieldErrors);
                 } else {
-                    showError('#review-error', errData.message || '후기 등록 실패');
+                    showError(
+                        '#review-error',
+                        errData.message || '후기 등록 실패'
+                    );
                 }
             } else {
-                showError('#review-error', '오류가 발생했습니다.');
+                showError(
+                    '#review-error',
+                    '오류가 발생했습니다.'
+                );
             }
         }
-    }
+    });
+}
 
-// 2. 후기 삭제 (이벤트 리스너 또는 삭제 함수)
-    async function deleteReview(studyPostId, reviewId) {
-        // 삭제는 확인을 받은 뒤 요청함
+
+// 2. 후기 삭제 함수
+const deleteBtns = document.querySelectorAll('.btn-delete');
+
+deleteBtns.forEach(deleteBtn => {
+    deleteBtn.addEventListener('click', async () => {
+
+        const reviewId = deleteBtn.dataset.reviewId;
+
         if (!confirm('후기를 삭제하시겠습니까?')) {
             return;
         }
 
         try {
-            await api.del(`/api/studies/${studyPostId}/reviews/${reviewId}`);
+            await api.del(
+                `/api/studies/${StudyPage.studyId}/reviews/${reviewId}`
+            );
 
-            // 성공하면 화면 다시 그림
             StudyPage.reload();
+
         } catch (error) {
             if (error.response && error.response.data) {
-                showError('#review-error', error.response.data.message || '후기 삭제 실패');
+                const errData = error.response.data;
+
+                showError(
+                    '#review-error',
+                    errData.message || '후기 삭제 실패'
+                );
             } else {
-                showError('#review-error', '삭제 처리 중 오류가 발생했습니다.');
+                showError(
+                    '#review-error',
+                    '삭제 처리 중 오류가 발생했습니다.'
+                );
             }
-        }
+         }
+     });
     }
 });
